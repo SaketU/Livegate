@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:fullapp/intro_screens/onboardingPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//added these imports
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 class SignUpPage extends StatefulWidget{
   final VoidCallback showLoginPage;
   const SignUpPage({Key? key, required this.showLoginPage,}) : super(key: key);
@@ -17,6 +21,9 @@ class _SignUpPageState extends State<SignUpPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  //added text controller
+  final _fullNameController = TextEditingController();
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -25,11 +32,53 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
+  // handles signup
   Future signUp() async {
-    if (passwordConfirmed()) {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+    // check if password matches confirmation
+    if (!passwordConfirmed()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    // backend signup endpoint
+    final url = Uri.parse('http://localhost:8000/create-account');
+
+    try {
+      // post request to backend end point with user schema data
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'fullName': _fullNameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text.trim(),
+        }),
+      );
+
+      // json response from backend server
+      final responseBody = jsonDecode(response.body);
+
+      // successful registration
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseBody['message'] ?? 'Registration Successful')),
+        );
+
+        // goes to home page if successful registration
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseBody['message'] ?? 'Registration Failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
@@ -63,6 +112,30 @@ class _SignUpPageState extends State<SignUpPage> {
               style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 40,),
+
+            // Full Name
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 25),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    controller: _fullNameController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      icon: Icon(CupertinoIcons.person),
+                      border: InputBorder.none,
+                      hintText: 'Full Name',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 12),
 
             //Email
             Padding(

@@ -5,8 +5,10 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { authenticateToken } = require('./utilities');
+const { authenticateToken } = require('./utils/utilities');
 const User = require('./models/user.model');
+const validator = require('validator');
+const sendVerificationEmail = require('./utils/emailVerification');
 
 mongoose.connect(config.connectionString);
 
@@ -23,6 +25,11 @@ app.post('/create-account', async (req, res) => {
         return res.status(400).json({ error: true, message: "Please enter all fields" });
     }
 
+    //validates email
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ error: true, message: "Invalid email" });
+    }
+
     //makes sure user doesn't already exist
     const isUser = await User.findOne({ email });
     if (isUser) {
@@ -37,9 +44,17 @@ app.post('/create-account', async (req, res) => {
         fullName,
         email,
         password: hashedPassword,
+        isVerified: false
     });
 
     await user.save();
+
+    //send verification email
+    try {
+        await sendVerificationEmail(user);
+    } catch (error) {
+        console.error("Error sending verification email:", error);
+    }
 
     //gets access token from sign up
     const accessToken = jwt.sign(
@@ -53,11 +68,40 @@ app.post('/create-account', async (req, res) => {
     //successful sign up
     return res.status(201).json({
         error: false,
-        user: { fullName: user.fullName, email: user.email },
+        user: { fullName: user.fullName, email: user.email, isVerified: user.isVerified },
         accessToken,
-        message: "Registration Successful",
+        message: "Registration Successful. Please verify your email.",
     });
 });
+
+//verification endpoint to update isVerified to true
+app.get('/verify-email', async (req, res) => {
+    const token = req.query.token;
+    if (!token) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    try {
+      //verify token
+      const payload = jwt.verify(token, process.env.EMAIL_SECRET);
+      const userId = payload.userId;
+
+      //find the user and update verification status
+      const user = await User.findById(userId);
+        if (!user) {
+            console.error("User not found for userId:", userId);
+            return res.status(400).json({ message: "User not found" });
+        }
+        // Then update
+        const updatedUser = await User.findByIdAndUpdate(userId, { isVerified: true }, { new: true });
+
+      //redirect or send a success message
+      return res.status(200).json({ message: "Email verified successfully!", user });
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+  });
+
 
 //handles login
 app.post('/login', async (req, res) => {
@@ -71,6 +115,10 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
         return res.status(400).json({ message: "User not found" });
+    }
+
+    if (!user.isVerified) {
+        return res.status(403).json({ message: "Please verify your email before logging in." });
     }
 
     //validates password

@@ -7,6 +7,8 @@ import 'package:fullapp/screens/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/intro_screens/onboardingPage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginPage extends StatefulWidget{
   final VoidCallback showSignUpPage;
@@ -15,17 +17,50 @@ class LoginPage extends StatefulWidget{
   @override
   _LoginPageState createState() => _LoginPageState();
 }
+
 class _LoginPageState extends State<LoginPage> {
 
   //text controller
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  Future logIn() async{
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim());
+  Future logIn() async {
+  final url = Uri.parse('http://localhost:8000/login');
+
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+      'email': _emailController.text.trim(),
+      'password': _passwordController.text.trim(),
+      }),
+    );
+
+
+    final responseBody = jsonDecode(response.body);
+
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')),);
+
+
+      // Navigate to home page after successful login
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseBody['message'] ?? 'Login Failed')),);
+    }
+    } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error: $e')),
+    );
   }
+}
+
 
   @override
   void dispose() {

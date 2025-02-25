@@ -11,6 +11,7 @@ import 'package:focused_menu/focused_menu.dart';
 import 'package:fullapp/widgets/searchTags.dart';
 import 'package:fullapp/models/chatMessageModel.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class ChatDetailPage extends StatefulWidget{
   @override
@@ -56,6 +57,359 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     super.dispose();
   }
 
+@override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        flexibleSpace: SafeArea(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  CupertinoIcons.back,
+                  size: 30,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 3, right: 10),
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage('https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                  maxRadius: screenHeight*0.025,
+                ),
+              ),
+              Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context){
+                            return ChatInfoPage();
+                          }));
+                        },
+                        child:
+                        Text("John Murphy",style: GoogleFonts.interTight(
+                              fontSize: screenHeight*0.0185,
+                              fontWeight: FontWeight.bold,),),
+                      ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.only(left: 6.0),
+                        child: Container(
+                      width: screenHeight*0.011,
+                      height: screenHeight*0.011,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFD80E),
+                        shape: BoxShape.circle,
+                      ),
+                      margin: EdgeInsets.only(right: screenHeight*0.011),
+                    ),
+                      ),
+
+                  Spacer(),
+                  
+                  Padding(padding: EdgeInsets.only(right: 26),
+                  child: GestureDetector(
+                    child: 
+                      SvgPicture.asset(
+                        'assets/facetime.svg',
+                        height: screenHeight*0.028,
+                        width: screenWidth*0.035,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.tertiary,  
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 18),
+                    child: GestureDetector(
+                      onTap: () {
+
+                      },
+                      child: 
+                        SvgPicture.asset(
+                          'assets/phone.svg',
+                          height: screenHeight*0.028,
+                          width: screenWidth*0.035,
+                          colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.tertiary, 
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      body: Column(
+        children: [
+          // Chat messages (Scrollable List)
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              reverse: true, // Scroll from bottom to top
+              physics: BouncingScrollPhysics(),
+              padding: EdgeInsets.zero, // Ensure no extra padding
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              itemBuilder: (context, index) {
+                var message = messages[index];
+                return buildMessage(message, index);
+              },
+            ),
+          ),
+
+          // Input Field Section
+          Container(
+  color: Theme.of(context).brightness == Brightness.dark
+      ? Color(0Xff242525)
+      : Colors.white,
+  child: SafeArea(
+    top: false,
+    bottom: true,
+    child: Container(
+      height: screenHeight * 0.052,
+      width: double.infinity,
+      padding: EdgeInsets.only(top: 6, bottom: 6),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Color(0Xff242525)
+          : Colors.white,
+      child: Row(
+        children: <Widget>[
+          SizedBox(width: 15),
+
+          // Profile Image
+          SvgPicture.asset(
+            'assets/camera.svg',
+            height: screenHeight*0.028,
+            width: screenWidth*0.034,
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).colorScheme.tertiary,
+              BlendMode.srcIn,
+            ),
+          ),
+
+          SizedBox(width: 13),
+
+          // Input Field
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              cursorColor: Theme.of(context).colorScheme.tertiary,
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.only(top: 11, left: 12),
+                suffixIconConstraints: BoxConstraints(
+                  minWidth: 20,
+                  minHeight: 20,
+                ),
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: SvgPicture.asset(
+                    'assets/stickers.svg',
+                    width: screenWidth * 0.025,
+                    height: screenHeight * 0.025,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.tertiary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.onPrimary,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(17),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(17),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(width: 13),
+
+          if (_isTyping)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () {
+                  if (_controller.text.trim().isNotEmpty) {
+                    print("Message Sent: ${_controller.text}");
+                    _controller.clear(); // Clear text field
+                  }
+                },
+                child: Center(
+                  child: Container(
+                    height: screenHeight * 0.040,
+                    width: screenHeight * 0.040,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.black
+                          : Theme.of(context).colorScheme.tertiary,
+                    ),
+                    child: Icon(
+                      Icons.send,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onPrimary,
+                      size: screenHeight * 0.020,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 12.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return ChatInfoPage();
+                  }));
+                },
+                child: SvgPicture.asset(
+                  'assets/photos.svg',
+                  height: screenHeight*0.032,
+                  width: screenWidth*0.032,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.tertiary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(right: 18.0),
+              child: GestureDetector(
+                child: SvgPicture.asset(
+                  'assets/mic.svg',
+                  height: screenHeight*0.0284,
+                  width: screenWidth*0.0187,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.tertiary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  ),
+),
+
+        ],
+      ),
+    );
+  }
+
+  // Message Bubble Widget
+  Widget buildMessage(ChatMessage message, int index) =>
+      FocusedMenuHolder(
+        menuItems: [
+          FocusedMenuItem(
+            title: Text('Tag'),
+            trailingIcon: Icon(CupertinoIcons.bookmark),
+            onPressed: () {
+              setState(() {
+                saved = true;
+              });
+            },
+          ),
+          FocusedMenuItem(
+            title: Text('Forward'),
+            trailingIcon: Icon(CupertinoIcons.paperplane),
+            onPressed: () {},
+          ),
+          FocusedMenuItem(
+            title: Text(
+              'Delete',
+              style: GoogleFonts.inter(color: Colors.red),
+            ),
+            trailingIcon: Icon(
+              CupertinoIcons.delete,
+              color: Colors.red,
+            ),
+            onPressed: () {},
+          ),
+        ],
+        blurBackgroundColor: Colors.grey,
+        openWithTap: false,
+        onPressed: () {},
+        child: Container(
+          padding: EdgeInsets.only(left: 14, right: 14, top: 7, bottom: 7),
+          child: Align(
+            alignment: (messages[index].messageType == "receiver"
+                ? Alignment.centerLeft
+                : Alignment.centerRight),
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.8,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: (messages[index].messageType == "receiver"
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.secondary),
+              ),
+              padding: EdgeInsets.symmetric(
+                  vertical: 10, horizontal: 17),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Flexible(
+                    child: Text(
+                      messages[index].messageContent,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: messages[index].messageType == "receiver"
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Theme.of(context).colorScheme.onSecondary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    messages[index].time,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onTertiary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+/*
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,7 +458,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                           }));
                         },
                         child:
-                        Text("John Murphy",style: GoogleFonts.inter( fontSize: 16 ,fontWeight: FontWeight.w600),),
+                        Text("John Murphy",style: GoogleFonts.interTight( fontSize: 16 ,fontWeight: FontWeight.w600),),
                       ),
                       SizedBox(width: 6,),
                       Container(
@@ -311,7 +665,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           FocusedMenuItem(
             title: Text(
               'Delete',
-              style: GoogleFonts.inter(color: Colors.red),
+              style: GoogleFonts.interTight(color: Colors.red),
             ),
             trailingIcon: Icon(
               CupertinoIcons.delete,
@@ -348,7 +702,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   Flexible(
                     child: Text(
                       messages[index].messageContent,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.interTight(
                         fontSize: 15,
                         color: messages[index].messageType == "receiver"
                             ? Theme.of(context).colorScheme.tertiary
@@ -359,7 +713,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   SizedBox(width: 4),
                   Text(
                     messages[index].time,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.interTight(
                       fontSize: 12,
                       color: Theme.of(context).colorScheme.onTertiary,
                     ),
@@ -429,6 +783,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     ),
   );
 }
+*/
+
+
+
+
+
+
 
     /*
     return Scaffold(

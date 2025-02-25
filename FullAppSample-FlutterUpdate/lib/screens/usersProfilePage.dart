@@ -33,6 +33,9 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
   //this is the feed profile page another user would see
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Theme
           .of(context)
@@ -40,10 +43,7 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
           .surface,
       appBar: AppBar(
         centerTitle: true,
-        title: Text('@username', style: GoogleFonts.inter(color: Theme
-            .of(context)
-            .colorScheme
-            .tertiary, fontWeight: FontWeight.bold, fontSize: 21),),
+        title: Text('@username',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.0248),),
         backgroundColor: Theme
             .of(context)
             .colorScheme

@@ -1,19 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:fullapp/screens/chatPage.dart';
-import 'package:fullapp/screens/settings.dart';
+import 'package:fullapp/auth/authPage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+//code
 class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
-}
-
-void _signUserOut() {
-  FirebaseAuth.instance.signOut();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
@@ -29,15 +24,29 @@ class _ProfilePageState extends State<ProfilePage> {
       'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?cs=srgb&dl=pexels-mohamed-abdelghaffar-771742.jpg&fm=jpg'
   ;
 
+  void _signUserOut() {
+    FirebaseAuth.instance.signOut();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AuthPage(),
+        ));
+      }
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         centerTitle: true,
-        title: Text('@username',style: GoogleFonts.inter(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: 21),),
+        title: Text('@username',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.0248),),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
@@ -51,22 +60,16 @@ class _ProfilePageState extends State<ProfilePage> {
         //drawer that contains settings(navigates to settings page), saved, liked, etc
 
         actions: [
-          IconButton(
-            padding: EdgeInsets.only(right: 24),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return ChatsPage();
-              }));
-            },
-            icon: Transform(
-              transform: Matrix4.identity()..scale(0.9, 1.2), // Adjust width (x) and height (y) scaling
-              alignment: Alignment.center, // Keeps scaling centered
-              child: Icon(
-                Icons.person_add_alt_outlined, // Your desired icon
-                size: 29, // Base size of the icon
-                color: Theme.of(context).colorScheme.tertiary,
-              ),
-            ),
+          Padding(padding: EdgeInsets.only(right: 21),
+          child: SvgPicture.asset(
+                      'assets/add_account.svg',
+                      height: screenHeight*0.0308,
+                      width: screenWidth*0.0308,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary, 
+                        BlendMode.srcIn,
+                      ),
+                    ),
           ),
 
 
@@ -80,8 +83,8 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           children: [
             Container(
-              width: 90,
-              height: 90,
+              width: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+              height: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -94,23 +97,23 @@ class _ProfilePageState extends State<ProfilePage> {
                   Align(
                     alignment: Alignment(1, 1.2), // Adjust alignment for position
                     child: Container(
-                      width: 31, // Increased size
-                      height: 31, // Increased size
+                      width: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
+                      height: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Theme.of(context).colorScheme.surface, // Border color as container's background
+                        color: Theme.of(context).colorScheme.background, // Border color as container's background
                       ),
                       child: Center(
                         child: Container(
-                          width: 24, // Smaller size to fit inside the border
-                          height: 24, // Smaller size to fit inside the border
+                          width: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
+                          height: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.blue, // Blue background
                           ),
                           child: Icon(
                             Icons.add,
-                            size: 18, // Adjust size as needed
+                            size: MediaQuery.of(context).size.width * 0.045, // 18px equivalent
                             color: Colors.white, // Icon color
                           ),
                         ),
@@ -121,242 +124,240 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-
-
-
-            SizedBox(height: 12,),
+            SizedBox(height: screenHeight*0.0142,),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Brad Johnson', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text('Brad Johnson', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.018)),
               ],
             ),
 
-            SizedBox(height: 3,),
+            SizedBox(height: screenHeight*0.00355,),
 
-            Text('Ravens • Longhorns • Lakers', style: GoogleFonts.inter(color: Theme.of(context).colorScheme.onTertiary),),
+            Text('Ravens • Longhorns • Lakers', style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.onTertiary, fontSize: screenHeight*0.018),),
 
             Padding(
-              padding: const EdgeInsets.only(top: 15, right: 8, left: 8, bottom: 15),
-              child: Text("Living life and seeing new things", style: GoogleFonts.inter(fontSize: 15),
+              padding: const EdgeInsets.only(top: 14, right: 8, left: 8, bottom: 15),
+              child: Text("Living life and seeing new things", style: GoogleFonts.interTight(fontSize: screenHeight*0.018),
               ),
             ),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                    return ChatsPage();
-                  }));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21.0),
+              child: Container(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context){
+                      return ChatsPage();
+                    }));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme
+                        .of(context)
+                        .colorScheme
+                        .primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
+              
+                  child: Text('Edit Profile', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: 15, color: Theme
                       .of(context)
                       .colorScheme
-                      .primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 0,
+                      .tertiary,),),
                 ),
-
-                child: Text('Edit Profile', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Theme
-                    .of(context)
-                    .colorScheme
-                    .tertiary,),),
               ),
             ),
 
-            SizedBox(height: 27,),
+            SizedBox(height: screenHeight*0.0319,),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                    return ChatsPage();
-                  }));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21),
+              child: SizedBox(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return ChatsPage();
+                    }));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.only(left: 12, right: 14), // Reduce extra padding
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-
-                child: Row(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max, // Ensures row takes full width
                     children: <Widget>[
-                      Icon(CupertinoIcons.brightness, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary),
-
-                      SizedBox(width: 10,),
-
-                      Center(child: Text(
-                          'Display Mode', style: GoogleFonts.inter(fontSize: 15, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary)),
-                      ),
-                      Expanded(
-                        child:
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(CupertinoIcons.right_chevron,
-                              size: 15, color: Theme
-                                    .of(context)
-                                    .colorScheme
-                                    .tertiary),
-                          ],
+                      SvgPicture.asset(
+                        'assets/display_mode.svg',
+                        height: screenHeight * 0.032,
+                        width: screenWidth * 0.032,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.tertiary,
+                          BlendMode.srcIn,
                         ),
                       ),
-                    ]
+                      SizedBox(width: 7), // Adjust spacing
+                      Text(
+                        'Display Mode',
+                        style: GoogleFonts.interTight(
+                          fontSize: 15,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                      ),
+                      Spacer(), // Pushes the icon to the right
+                      Icon(
+                        CupertinoIcons.right_chevron,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+
+
 
             SizedBox(height: 20,),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                    return ChatsPage();
-                  }));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21),
+              child: SizedBox(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return ChatsPage();
+                    }));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.only(left: 17, right: 14 ), // Adjust horizontal padding
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-
-                child: Row(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max, // Use max to make full width
                     children: <Widget>[
-                      Icon(CupertinoIcons.hand_raised, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary),
-
-                      SizedBox(width: 10,),
-
-                      Center(child: Text(
-                          'Help', style: GoogleFonts.inter(fontSize: 15, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary)),
-                      ),
-                      Expanded(
-                        child:
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(CupertinoIcons.right_chevron,
-                                size: 15, color: Theme
-                                    .of(context)
-                                    .colorScheme
-                                    .tertiary),
-                          ],
+                      SvgPicture.asset(
+                        'assets/help.svg',
+                        height: screenHeight * 0.0308,
+                        width: screenWidth * 0.0213,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.tertiary,
+                          BlendMode.srcIn,
                         ),
                       ),
-                    ]
+                      SizedBox(width: 11), // Adjust spacing
+                      Text(
+                        'Help',
+                        style: GoogleFonts.interTight(
+                          fontSize: 15,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                      ),
+                      Spacer(), // Pushes the icon to the right
+                      Icon(
+                        CupertinoIcons.right_chevron,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
+
 
             SizedBox(height: 20,),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                    return ChatsPage();
-                  }));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
-                      .of(context)
-                      .colorScheme
-                      .primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21),
+              child: SizedBox(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return ChatsPage();
+                    }));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: EdgeInsets.only(left: 15, right: 14), // Reduce extra padding
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-
-                child: Row(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max, // Ensures row takes full width
                     children: <Widget>[
-                      Icon(CupertinoIcons.info, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary),
-
-                      SizedBox(width: 10,),
-
-                      Center(child: Text(
-                          'About', style: GoogleFonts.inter(fontSize: 15, color: Theme
-                          .of(context)
-                          .colorScheme
-                          .tertiary)),
-                      ),
-                      Expanded(
-                        child:
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(CupertinoIcons.right_chevron,
-                                size: 15, color: Theme
-                                    .of(context)
-                                    .colorScheme
-                                    .tertiary),
-                          ],
+                      SvgPicture.asset(
+                        'assets/info.svg',
+                        height: screenHeight * 0.0272,
+                        width: screenWidth * 0.0272,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.tertiary,
+                          BlendMode.srcIn,
                         ),
                       ),
-                    ]
+                      SizedBox(width: 9), // Adjust spacing
+                      Text(
+                        'About',
+                        style: GoogleFonts.interTight(
+                          fontSize: 15,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                      ),
+                      Spacer(), // Pushes the icon to the right
+                      Icon(
+                        CupertinoIcons.right_chevron,
+                        size: 18,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
 
-            SizedBox(height: 32,),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: _signUserOut,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
-                      .of(context)
-                      .colorScheme
-                      .tertiary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            SizedBox(height: screenHeight*0.0379,),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21.0),
+              child: Container(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _signUserOut,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme
+                        .of(context)
+                        .colorScheme
+                        .tertiary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
                   ),
-                  elevation: 0,
+              
+                  child: Text('Log out', style: GoogleFonts.interTight(fontWeight: FontWeight.w600, color: Colors.white,),),
                 ),
-
-                child: Text('Log out', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white,),),
               ),
             ),
 
@@ -366,7 +367,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  //When images are shown in the profile page
+
+//When images are shown in the profile page
   /* Widget makeDismissible ({required Widget child}) => GestureDetector(
     behavior: HitTestBehavior.opaque,
     onTap: () => Navigator.of(context).pop(),

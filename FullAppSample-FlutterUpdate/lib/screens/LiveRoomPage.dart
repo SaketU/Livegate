@@ -10,6 +10,8 @@ import 'package:fullapp/widgets/liveList.dart';
 import 'package:fullapp/models/Rooms.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/widgets/customBottomSheet.dart';
 
 class LiveRoomPage extends StatefulWidget {
 
@@ -18,6 +20,8 @@ class LiveRoomPage extends StatefulWidget {
 }
 
 class _LiveRoomPageState extends State<LiveRoomPage> {
+  TextEditingController _controller = TextEditingController();
+  bool _isTyping = false;
   bool saved = false;
 
   List<RoomMessage> messages = [
@@ -101,29 +105,325 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         messageContent: "Ufff",
         messageType: "receiver",
         selected: true),
-    RoomMessage(name: '@John_DJ',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+    RoomMessage(
+        name: '@John_DJ',
+        profileImage:
+            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
         messageContent: "Ohhh that was good",
         messageType: "sender",
         selected: true),
-    RoomMessage(name: '@Max_10',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+    RoomMessage(
+        name: '@Max_10',
+        profileImage:
+            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
         messageContent: "Nice shot",
         messageType: "receiver",
         selected: true),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _isTyping = _controller.text.isNotEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        flexibleSpace: SafeArea(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: Icon(
+                  CupertinoIcons.back,
+                  size: 30,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 3, right: 5),
+                child: Text(
+                  "Lakers vs Warriors",
+                  style: GoogleFonts.interTight(
+                    fontSize: screenHeight * 0.018,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Text(
+                '1 hr',
+                style: GoogleFonts.interTight(
+                    fontSize: screenHeight*0.015,
+                    color: Theme.of(context).colorScheme.onTertiary),
+              ),
+              Spacer(),
+              
+              Padding(padding: EdgeInsets.only(right: 18),
+              child: GestureDetector(
+                child: 
+                  SvgPicture.asset(
+                    'assets/report.svg',
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.tertiary,  
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 18),
+                child: GestureDetector(
+                  onTap: () {
+                          showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            context: context,
+                            builder: (context) => const CustomBottomSheet(),
+                          );
+                        },
+                  child: 
+                    SvgPicture.asset(
+                      'assets/share.svg',
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary, 
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      body: Column(
+        children: [
+          // Chat messages (Scrollable List)
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              reverse: true, // Scroll from bottom to top
+              physics: BouncingScrollPhysics(),
+              padding: EdgeInsets.zero, // Ensure no extra padding
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              itemBuilder: (context, index) {
+                var message = messages[index];
+                return buildMessage(message, index);
+              },
+            ),
+          ),
+
+          // Input Field Section
+          Container(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Color(0Xff242525)
+                : Colors.white,
+            child: SafeArea(
+              top: false,
+              bottom: true,
+              child: Container(
+                height: screenHeight * 0.053,
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 6),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Color(0Xff242525)
+                    : Colors.white,
+                child: Row(
+                  children: <Widget>[
+                    SizedBox(width: 15),
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(
+                          'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                      maxRadius: screenHeight * 0.020,
+                    ),
+                    SizedBox(width: 13),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        cursorColor: Theme.of(context).colorScheme.tertiary,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(top: 11, left: 12),
+                          suffixIconConstraints: BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 12.0),
+                            child: SvgPicture.asset(
+                              'assets/stickers.svg',
+                              width: screenWidth * 0.025,
+                              height: screenHeight * 0.025,
+                              colorFilter: ColorFilter.mode(
+                                Theme.of(context).colorScheme.tertiary,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: Theme.of(context).colorScheme.onPrimary,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(17),
+                            borderSide: BorderSide(color: Colors.transparent),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(17),
+                            borderSide: BorderSide(color: Colors.transparent),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 13),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 18),
+                      child: GestureDetector(
+                        onTap: _isTyping
+                            ? () {
+                                // Handle message send action
+                              }
+                            : null,
+                        child: Container(
+                          height: screenHeight * 0.040,
+                          width: screenHeight * 0.040,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _isTyping
+                                ? ( Colors.black) //color when typed
+                                : Theme.of(context).brightness == Brightness.dark
+                                ?Colors.grey.shade800 : Colors.grey[350], //color when no typed dark : light
+                          ),
+                          child: Icon(
+                            Icons.send,
+                            color: _isTyping
+                                ? (Colors.white) //color when typed
+                                : Theme.of(context).brightness == Brightness.dark
+                                    ?Colors.white60 : Colors.white70, //color when no typed dark : light
+                            size: screenHeight * 0.020,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Message Bubble Widget
+  Widget buildMessage(RoomMessage message, int index) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+      child: Align(
+        alignment: (messages[index].messageType == "receiver"
+            ? Alignment.centerLeft
+            : Alignment.centerRight),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Profile Image
+            CircleAvatar(
+                    backgroundImage: NetworkImage(messages[index].profileImage),
+                    maxRadius: screenHeight*0.020,
+                  ),
+            SizedBox(width: screenWidth*0.008),
+            // Name and Message Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Name
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return UsersProfilePage();
+                      }));// Navigate to User Profile
+                    },
+                    child: Text(
+                      messages[index].name,
+                      style: GoogleFonts.interTight(
+                        fontSize: screenHeight*0.018,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  // Message Content
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: (messages[index].messageType == "receiver" //Color of the text containers
+                          ? Theme.of(context).colorScheme.primary //other users texts
+                          : Theme.of(context).brightness == Brightness.dark? //your texts
+                          Colors.grey[800]: Theme.of(context).colorScheme.secondary),//dark mode : light mode
+                    ),
+                    padding:
+                        EdgeInsets.symmetric(vertical: 8, horizontal: 17),
+                    child: Text(
+                      messages[index].messageContent,
+                      style: GoogleFonts.interTight(
+                        fontSize: screenHeight*0.018,
+                        color: messages[index].messageType == "receiver" //color of the letters 
+                            ? Theme.of(context).colorScheme.tertiary //other users texts
+                            : Theme.of(context).colorScheme.onSecondary, //your texts
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+  
+
+
+
+//old app bar
+/*AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
         backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
         flexibleSpace: SafeArea(
           child: Container(
-            padding: EdgeInsets.only(right: 5, left: 10),
+            padding: EdgeInsets.only(right: 18, left: 18),
             child: Row(
               children: <Widget>[
                 IconButton(
@@ -136,13 +436,13 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                 ),
                 SizedBox(width: 2),
                 Text('Lakers vs Warriors',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.interTight(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.tertiary)),
                 SizedBox(width: 4),
                 Text('1 hr',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.interTight(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onTertiary)),
@@ -185,270 +485,90 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           ),
         ),
       ),
-      body: Stack(
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(bottom: 40),
-            child: ListView.builder(
-              itemCount: messages.length,
-              reverse: true, // Scroll from bottom to top
-              shrinkWrap: true,
-              physics: BouncingScrollPhysics(),
-              itemBuilder: (context, index) {
-                var message = messages[index];
-                return buildMessage(message, index);
-              },
-            ),
-          ),
-          Stack(
-              children: [
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Container(
-                    padding: EdgeInsets.only(top: 10, bottom: 20),
-                    height: 65,
-                    width: double.infinity,
-                    color: Theme.of(context).colorScheme.tertiaryContainer,
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 15),
-                          child: Container(
-                            width: 37,
-                            height: 37,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: NetworkImage('https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 23,),
+      */
 
-                        Expanded(
-                          child: TextField(
-                            cursorColor: Theme.of(context).colorScheme.tertiary,
-
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.only(top: 12, left: 12),
-                              suffixIcon: Icon(CupertinoIcons.square,color: Theme.of(context).colorScheme.tertiary,),
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.onPrimary,
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(17),
-                                  borderSide: BorderSide(color: Colors.transparent)
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(17),
-                                borderSide: BorderSide(color: Colors.black26),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.only(left: 23, right: 18),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context){
-                                return ProfilePage();
-                              }));
-                            },
-                            child: Center(
-                              child: Container(
-                                height: 35,
-                                width: 35,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                ),
-                                child: Icon(
-                                  Icons.send,
-                                  color: Theme.of(context).colorScheme.onPrimary,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              ]
-          ),
-
-        ],
-      ),
-    );
-  }
-
-  Widget buildMessage(RoomMessage message, int index) => FocusedMenuHolder(
-    menuItems: [
-      FocusedMenuItem(
-          title: Text('Tag'),
-          trailingIcon: Icon(CupertinoIcons.bookmark),
-          onPressed: () {
-            setState(() {
-              saved = true;
-            });
-          }),
-      FocusedMenuItem(
-          title: Text('Forward'),
-          trailingIcon: Icon(CupertinoIcons.paperplane),
-          onPressed: () {}),
-      FocusedMenuItem(
-          title: Text(
-            'Delete',
-            style: TextStyle(color: Colors.red),
-          ),
-          trailingIcon: Icon(
-            CupertinoIcons.delete,
-            color: Colors.red,
-          ),
-          onPressed: () {}),
-    ],
-    blurBackgroundColor: Colors.grey,
-    openWithTap: false,
-    onPressed: () {},
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: 7, horizontal: 14),
-      child: Align(
-        alignment: (messages[index].messageType == "receiver"
-            ? Alignment.centerLeft
-            : Alignment.centerRight),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Profile Image
-            Container(
-              width: 37,
-              height: 37,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(messages[index].profileImage),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            SizedBox(width: 7),
-            // Name and Message Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+      
+/*
+Stack(
                 children: [
-                  // Name
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context){
-                        return UsersProfilePage();
-                      }));
-                    },
-                    child: Text(
-                      messages[index].name,
-                      style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.tertiary),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  // Message Content
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      color: (messages[index].messageType == "receiver"
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.secondary),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 17),
-                    child: Text(
-                      messages[index].messageContent,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: messages[index].messageType == "receiver"
-                            ? Theme.of(context).colorScheme.tertiary
-                            : Theme.of(context).colorScheme.onSecondary,
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Container(
+                      padding: EdgeInsets.only(top: 10,),
+                      height: screenHeight*0.052,
+                      width: double.infinity,
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
+                      child: Row(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: Container(
+                              width: 37,
+                              height: 37,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                  image: NetworkImage('https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 13,),
+        
+                          Expanded(
+                            child: TextField(
+                              cursorColor: Theme.of(context).colorScheme.tertiary,
+        
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.only(top: 12, left: 12),
+                                suffixIcon: Icon(CupertinoIcons.square,color: Theme.of(context).colorScheme.tertiary,),
+                                filled: true,
+                                fillColor: Theme.of(context).colorScheme.onPrimary,
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(17),
+                                    borderSide: BorderSide(color: Colors.transparent)
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(17),
+                                  borderSide: BorderSide(color: Colors.black26),
+                                ),
+                              ),
+                            ),
+                          ),
+        
+                          Padding(
+                            padding: const EdgeInsets.only(left: 33, right: 18),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context){
+                                  return ProfilePage();
+                                }));
+                              },
+                              child: Center(
+                                child: Container(
+                                  height: 35,
+                                  width: 35,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(context).colorScheme.tertiary,
+                                  ),
+                                  child: Icon(
+                                    Icons.send,
+                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  )
+                ]
             ),
+        
           ],
         ),
-      ),
-    ),
-  );
-
-
-
-  Widget makeDismissible({required Widget child}) =>
-      GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => Navigator.of(context).pop(),
-        child: GestureDetector(onTap: () {}, child: child,),
-      );
-
-  Widget buildSheet() =>
-      makeDismissible(
-        child: DraggableScrollableSheet(
-          initialChildSize: 0.75,
-          builder: (_, controller) =>
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .tertiaryContainer,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(25),
-                  ),
-                ),
-                padding: EdgeInsets.only(
-                    top: 15, left: 10, right: 10, bottom: 20),
-                child: ListView(
-                  controller: controller,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.only(left: 25, right: 25),
-                      width: double.infinity,
-                      height: 35,
-                      child: TextField(
-                        cursorColor: Colors.grey,
-                        decoration: InputDecoration(
-                          hintText: "Search...",
-                          hintStyle: TextStyle(color: Colors.grey.shade600),
-                          prefixIcon: Icon(
-                            CupertinoIcons.search, color: Colors.grey.shade600,
-                            size: 25,),
-                          filled: true,
-                          fillColor: Colors.black12,
-                          contentPadding: EdgeInsets.all(3),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(
-                                color: Colors.transparent,
-                              )
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.black12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        ),
-      );
-}
+        */

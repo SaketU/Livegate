@@ -1,11 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
+/*import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 import 'package:fullapp/intro_screens/loginPage.dart';
 import 'package:fullapp/intro_screens/signUpPage.dart';
 import 'package:fullapp/screens/usersProfilePage.dart';
-
+//code
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -403,6 +404,8 @@ class SettingsPage extends StatelessWidget {
     );
   }
   }
+
+ */
 
 
     /*

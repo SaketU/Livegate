@@ -22,6 +22,8 @@ class ConversationList extends StatefulWidget {
 class _ConversationListState extends State<ConversationList> {
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -37,9 +39,9 @@ class _ConversationListState extends State<ConversationList> {
                 children: <Widget>[
                   CircleAvatar(
                     backgroundImage: NetworkImage(widget.profileImage),
-                    maxRadius: 28,
+                    maxRadius: screenHeight*0.033,
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: screenWidth*0.022),
                   Expanded(
                     child: Container(
                       color: Colors.transparent,
@@ -48,22 +50,22 @@ class _ConversationListState extends State<ConversationList> {
                         children: <Widget>[
                           Text(
                             widget.name,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
+                            style: GoogleFonts.interTight(
+                              fontSize: screenHeight*0.018,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 5),
+                          SizedBox(height: 1),
                           Text(
                             widget.messageText,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: widget.isMessageRead
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                            maxLines: 1,  // Ensures the text stays on one line
+                            overflow: TextOverflow.ellipsis,  // Adds "..." when the text overflows
+                            style: GoogleFonts.interTight(
+                              fontSize: screenHeight * 0.018,
+                              fontWeight: widget.isMessageRead ? FontWeight.bold : FontWeight.normal,
                               color: widget.isMessageRead
                                   ? Theme.of(context).colorScheme.tertiary
-                                  : Colors.grey.shade500,
+                                  : Colors.grey,
                             ),
                           ),
                         ],
@@ -73,28 +75,34 @@ class _ConversationListState extends State<ConversationList> {
                 ],
               ),
             ),
-            Row(
-              children: [
-                if (widget.isMessageRead)
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Colors.yellow[700],
-                      shape: BoxShape.circle,
+            Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Row(
+                children: [
+                  if (widget.isMessageRead)
+                    Container(
+                      width: screenHeight*0.011,
+                      height: screenHeight*0.011,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFD80E),
+                        shape: BoxShape.circle,
+                      ),
+                      margin: EdgeInsets.only(right: screenHeight*0.011),
                     ),
-                    margin: EdgeInsets.only(right: 8),
+                  Text(
+                    widget.time,
+                    style: GoogleFonts.interTight(
+                      fontSize: screenHeight*0.018,
+                      fontWeight: widget.isMessageRead
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: widget.isMessageRead
+                                    ? Theme.of(context).colorScheme.tertiary//not read
+                                    : Colors.grey,
+                    ),
                   ),
-                Text(
-                  widget.time,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: widget.isMessageRead
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/auth/authPage.dart';
-import 'package:fullapp/intro_screens/loginPage.dart';
+import 'package:fullapp/auth/loginPage.dart';
 import 'package:fullapp/intro_screens/onboardingPage.dart';
 import 'package:fullapp/screens/LivesPage.dart';
 import 'package:fullapp/screens/homePage.dart';

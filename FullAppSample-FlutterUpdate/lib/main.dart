@@ -1,14 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:fullapp/firebase_options.dart';
 import 'package:fullapp/auth/main_page.dart';
 import 'package:fullapp/screens/homePage.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
-import 'package:fullapp/intro_screens/loginPage.dart';
+import 'package:fullapp/auth/loginPage.dart';
 import 'package:fullapp/screens/exProfilePage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fullapp/themes/dark_theme.dart';
 import 'package:fullapp/themes/light_theme.dart';
-
+//code
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -17,7 +18,7 @@ Future main() async {
 
   runApp(
     DevicePreview(
-      enabled: true,
+      enabled: !kReleaseMode,//true,
       builder: (context) => MyApp(), // Wrap your app
     ),
   );

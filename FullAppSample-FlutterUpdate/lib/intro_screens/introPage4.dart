@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
 
-class IntroPage1 extends StatelessWidget {
+class IntroPage4 extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -43,14 +44,14 @@ class IntroPage1 extends StatelessWidget {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Welcome to',
+                      text: 'Lets',
                       style: GoogleFonts.interTight(
                         fontSize: screenHeight * 0.028,
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
                     TextSpan(
-                      text: ' Livegate!',
+                      text: ' Begin!',
                       style: GoogleFonts.interTight(
                         fontSize: screenHeight * 0.028,
                         fontWeight: FontWeight.bold,
@@ -68,7 +69,7 @@ class IntroPage1 extends StatelessWidget {
               left: 39,
               right: 39,
               child: Text(
-                'Our live communications platform that lets you chat about sporting events in real time',
+                'Enjoy a new and different experience to how you watch sports',
                 style: GoogleFonts.interTight(
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.grey

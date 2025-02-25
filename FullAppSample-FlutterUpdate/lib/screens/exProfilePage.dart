@@ -1,13 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/models/chatGroupModel.dart';
-import 'package:fullapp/intro_screens/loginPage.dart';
+import 'package:fullapp/auth/loginPage.dart';
 import 'package:fullapp/screens/chatPage.dart';
 import 'package:fullapp/screens/settings.dart';
+import 'package:fullapp/screens/sourcePage.dart';
 import 'package:fullapp/screens/usersProfilePage.dart';
 import 'package:fullapp/widgets/groupsList.dart';
 import 'package:fullapp/screens/profilePage.dart';
-
+//code
 class ExProfilePage extends StatefulWidget {
 
   @override
@@ -38,7 +39,7 @@ class _ExProfilePageState extends State<ExProfilePage> {
                       IconButton(
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (context){
-                            return SettingsPage();
+                            return SourcePage();
                           }));
                         },
                         icon: Icon(CupertinoIcons.settings,color: Colors.grey.shade500,size: 30,),

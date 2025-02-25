@@ -16,63 +16,100 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*"}));
 
-//creates account
-app.post('/create-account', async (req, res) => {
-    const { fullName, email, password } = req.body;
+app.post('/set-email', async (req, res) => {
+    const { fullName, email } = req.body;
 
-    //handles incorrect sign up info
-    if (!fullName || !email || !password) {
+    //validate required fields
+    if (!fullName || !email) {
         return res.status(400).json({ error: true, message: "Please enter all fields" });
     }
 
-    //validates email
+    //validate email format
     if (!validator.isEmail(email)) {
         return res.status(400).json({ error: true, message: "Invalid email" });
     }
 
-    //makes sure user doesn't already exist
+    //check if the email is already in use
     const isUser = await User.findOne({ email });
     if (isUser) {
         return res.status(400).json({ error: true, message: "User already exists" });
     }
 
-    //securely hashes password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    //user info to sign up
-    const user = new User({
-        fullName,
-        email,
-        password: hashedPassword,
-        isVerified: false
-    });
-
-    await user.save();
-
-    //send verification email
-    try {
-        await sendVerificationEmail(user);
-    } catch (error) {
-        console.error("Error sending verification email:", error);
-    }
-
-    //gets access token from sign up
-    const accessToken = jwt.sign(
-        { userId: user._id },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-            expiresIn: "72h"
-        }
-    );
-
-    //successful sign up
-    return res.status(201).json({
+    //since we're only validating, return success without creating a new user
+    return res.status(200).json({
         error: false,
-        user: { fullName: user.fullName, email: user.email, isVerified: user.isVerified },
-        accessToken,
-        message: "Registration Successful. Please verify your email.",
+        message: "Email is valid and available."
     });
 });
+
+
+
+app.post('/set-password', async (req, res) => {
+    const { fullName, email, username, password, confirmPassword } = req.body;
+
+    //check for required fields
+    if (!fullName || !email || !username || !password || !confirmPassword) {
+      return res.status(400).json({ error: true, message: "Missing required fields" });
+    }
+
+    //validate email format
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ error: true, message: "Invalid email" });
+    }
+
+    //ensure both password fields match
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: true, message: "Passwords do not match" });
+    }
+
+    //check if the username is already taken
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      return res.status(400).json({ error: true, message: "Username is already taken" });
+    }
+
+    //check if the email is already in use (if needed)
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ error: true, message: "Email is already in use" });
+    }
+
+    try {
+      //hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      //create a new user
+      const user = new User({
+        fullName,
+        email,
+        username,
+        password: hashedPassword,
+      });
+
+      await user.save();
+
+      //create the JWT token for the new user
+      const accessToken = jwt.sign(
+        { userId: user._id },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "72h" }
+      );
+
+      return res.status(200).json({
+        error: false,
+        message: "Account created successfully",
+        user: { fullName: user.fullName, email: user.email, username: user.username },
+        accessToken,
+      });
+    } catch (error) {
+      console.error("Error creating account:", error);
+      return res.status(500).json({ error: true, message: "Server error" });
+    }
+  });
+  
+
+
+
 
 //verification endpoint to update isVerified to true
 app.get('/verify-email', async (req, res) => {

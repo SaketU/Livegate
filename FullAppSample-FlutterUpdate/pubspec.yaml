@@ -30,7 +30,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^1.1.0
 
   device_preview: ^1.2.0
 
@@ -43,6 +42,8 @@ dependencies:
   focused_menu: ^1.0.2
 
   firebase_auth: ^5.4.2
+
+  flutter_svg: ^2.0.17
 
 
 
@@ -81,6 +82,30 @@ flutter:
   assets:
     - assets/main-logo.png
     - lib/Images App/
+    - assets/Profile-Icon.svg
+    - assets/search-icon.svg
+    - assets/chat-icon.svg
+    - assets/live-icon.svg
+    - assets/basketball-icon.svg
+    - assets/add_account.svg
+    - assets/apple.svg
+    - assets/display_mode.svg
+    - assets/edit.svg
+    - assets/facetime.svg
+    - assets/google.svg
+    - assets/help.svg
+    - assets/info.svg
+    - assets/leave.svg
+    - assets/mic.svg
+    - assets/mute.svg
+    - assets/person.svg
+    - assets/phone.svg
+    - assets/photos.svg
+    - assets/search-photos.svg
+    - assets/share.svg
+    - assets/stickers.svg
+    - assets/report.svg
+    - assets/camera.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

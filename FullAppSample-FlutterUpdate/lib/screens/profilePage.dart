@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/auth/authPage.dart';
+import 'package:fullapp/screens/editProfilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -82,45 +83,48 @@ class _ProfilePageState extends State<ProfilePage> {
         physics: BouncingScrollPhysics(),
         child: Column(
           children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
-              height: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(profileImage),
-                  fit: BoxFit.cover,
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                height: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: NetworkImage(profileImage),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment(1, 1.2), // Adjust alignment for position
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
-                      height: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Theme.of(context).colorScheme.background, // Border color as container's background
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
-                          height: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.blue, // Blue background
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            size: MediaQuery.of(context).size.width * 0.045, // 18px equivalent
-                            color: Colors.white, // Icon color
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment(1, 1.2), // Adjust alignment for position
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
+                        height: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).colorScheme.background, // Border color as container's background
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
+                            height: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.blue, // Blue background
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: MediaQuery.of(context).size.width * 0.045, // 18px equivalent
+                              color: Colors.white, // Icon color
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -150,9 +154,21 @@ class _ProfilePageState extends State<ProfilePage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return ChatsPage();
-                    }));
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) => EditProfilePage(),
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0); // Start from bottom
+                          const end = Offset.zero; // End at normal position
+                          const curve = Curves.easeInOut;
+
+                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                          var offsetAnimation = animation.drive(tween);
+
+                          return SlideTransition(position: offsetAnimation, child: child);
+                        },
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme
@@ -228,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
 
-            SizedBox(height: 20,),
+            SizedBox(height: screenHeight*0.0236,),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
@@ -282,7 +298,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
 
-            SizedBox(height: 20,),
+            SizedBox(height: screenHeight*0.0236,),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
@@ -346,17 +362,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ElevatedButton(
                   onPressed: _signUserOut,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme
-                        .of(context)
-                        .colorScheme
-                        .tertiary,
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Theme
+                      .of(context)
+                      .colorScheme
+                      .tertiary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
                   ),
               
-                  child: Text('Log out', style: GoogleFonts.interTight(fontWeight: FontWeight.w600, color: Colors.white,),),
+                  child: Text('Log out', style: GoogleFonts.interTight(fontWeight: FontWeight.w600, 
+                  color: Colors.white,),),
                 ),
               ),
             ),

@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/Rooms.dart';
-import 'package:fullapp/screens/chatDocumentsPage.dart';
-import 'package:fullapp/screens/chatPage.dart';
 import 'package:fullapp/screens/profilePage.dart';
-import 'package:fullapp/screens/usersProfilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
-import 'package:fullapp/widgets/feedButtons.dart';
-import 'package:fullapp/widgets/feedPosts.dart';
-import 'package:flutter/material.dart';
 import 'package:fullapp/widgets/liveList.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:fullapp/screens/exProfilePage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 //code
@@ -44,7 +36,9 @@ class _UpcomingPageState extends State<UpcomingPage> {
           slivers: [
             // SliverAppBar with floating behavior
             SliverAppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
               elevation: 0,
               floating: true,
               snap: true, // Ensures the AppBar snaps into place when scrolling up
@@ -140,7 +134,9 @@ class _UpcomingPageState extends State<UpcomingPage> {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 65, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

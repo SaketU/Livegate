@@ -4,6 +4,7 @@ import 'package:fullapp/screens/chatPage.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class UsersProfilePage extends StatefulWidget {
   @override
@@ -67,112 +68,130 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
         physics: BouncingScrollPhysics(),
         child: Column(
           children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(profileImage),
-                  fit: BoxFit.cover,
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                height: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    image: NetworkImage(profileImage),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
 
 
-            SizedBox(height: 12,),
+            SizedBox(height: screenHeight*0.015,),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('John Daver', style: GoogleFonts.inter(
-                    fontWeight: FontWeight.bold, fontSize: 15)),
+                    fontWeight: FontWeight.bold, fontSize: screenHeight*0.018)),
               ],
             ),
 
-            SizedBox(height: 3,),
+            SizedBox(height: screenHeight*0.00355,),
 
             Text('49rs • Bulls • LSU', style: GoogleFonts.inter(color: Theme
                 .of(context)
                 .colorScheme
-                .onTertiary),),
+                .onTertiary, fontSize: screenHeight*0.018),),
 
             Padding(
               padding: const EdgeInsets.only(
                   top: 15, right: 8, left: 8, bottom: 15),
               child: Text("Always supporting my teams",
-                style: GoogleFonts.inter(fontSize: 15),
+                style: GoogleFonts.inter(fontSize: screenHeight*0.018),
               ),
             ),
 
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return ChatsPage();
-                  }));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  elevation: 0,
-                ),
-
-                child: Text('Message', style: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold, color: Colors.white,),),
-              ),
-            ),
-
-            SizedBox(height: 27,),
-
-
-            Container(
-              height: 45,
-              width: 336,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isReported = true; // Change state to "reported"
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isReported
-                      ? Colors.transparent // Transparent background for reported state
-                      : Theme.of(context).colorScheme.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(
-                      color: isReported? Theme.of(context).colorScheme.tertiary: Theme.of(context).colorScheme.primary,
-                      width: isReported ? 2 : 0, // Outline when reported
-                    ),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      CupertinoIcons.exclamationmark_circle,
-                      color: isReported
-                          ? Theme.of(context).colorScheme.tertiary
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21.0),
+              child: Container(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return ChatsPage();
+                    }));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blue
                           : Theme.of(context).colorScheme.tertiary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    SizedBox(width: 10),
-                    Center(
-                      child: Text(
-                        isReported ? 'User Reported' : 'Report User',
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          color: isReported
-                              ? Theme.of(context).colorScheme.tertiary
-                              : Theme.of(context).colorScheme.tertiary,
-                        ),
+                    elevation: 0,
+                  ),
+              
+                  child: Text('Message', style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white,),),
+                ),
+              ),
+            ),
+
+            SizedBox(height: screenHeight*0.032,),
+
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 21.0),
+              child: Container(
+                height: screenHeight*0.0533,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      isReported = true; // Change state to "reported"
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isReported
+                        ? Colors.transparent // Transparent background for reported state
+                        : Theme.of(context).colorScheme.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: isReported? Theme.of(context).colorScheme.tertiary: Theme.of(context).colorScheme.primary,
+                        width: isReported ? 2 : 0, // Outline when reported
                       ),
                     ),
-                  ],
+                    padding: EdgeInsets.only(left: 15, right: 14),
+                    elevation: 0,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      SvgPicture.asset(
+                        'assets/report.svg',
+                        height: screenHeight * 0.0272,
+                        width: screenWidth * 0.0272,
+                        colorFilter: ColorFilter.mode(
+                          isReported
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Theme.of(context).colorScheme.tertiary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      SizedBox(width: 9),
+                      Center(
+                        child: Text(
+                          isReported ? 'User Reported' : 'Report User',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            color: isReported
+                                ? Theme.of(context).colorScheme.tertiary
+                                : Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )

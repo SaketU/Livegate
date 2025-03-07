@@ -328,40 +328,12 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   }
 
   // Message Bubble Widget
-  Widget buildMessage(ChatMessage message, int index) =>
-      FocusedMenuHolder(
-        menuItems: [
-          FocusedMenuItem(
-            title: Text('Tag'),
-            trailingIcon: Icon(CupertinoIcons.bookmark),
-            onPressed: () {
-              setState(() {
-                saved = true;
-              });
-            },
-          ),
-          FocusedMenuItem(
-            title: Text('Forward'),
-            trailingIcon: Icon(CupertinoIcons.paperplane),
-            onPressed: () {},
-          ),
-          FocusedMenuItem(
-            title: Text(
-              'Delete',
-              style: GoogleFonts.inter(color: Colors.red),
-            ),
-            trailingIcon: Icon(
-              CupertinoIcons.delete,
-              color: Colors.red,
-            ),
-            onPressed: () {},
-          ),
-        ],
-        blurBackgroundColor: Colors.grey,
-        openWithTap: false,
-        onPressed: () {},
-        child: Container(
-          padding: EdgeInsets.only(left: 14, right: 14, top: 7, bottom: 7),
+  Widget buildMessage(ChatMessage message, int index) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    return
+      Container(
+          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 14,),
           child: Align(
             alignment: (messages[index].messageType == "receiver"
                 ? Alignment.centerLeft
@@ -374,10 +346,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 borderRadius: BorderRadius.circular(15),
                 color: (messages[index].messageType == "receiver"
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.secondary),
+                    : Theme.of(context).brightness == Brightness.dark? //your texts
+                    Colors.grey[800]: Theme.of(context).colorScheme.secondary),
               ),
               padding: EdgeInsets.symmetric(
-                  vertical: 10, horizontal: 17),
+                  vertical: 10, horizontal: 17), //screenHeight*0.010, horizontal: screenWidth*0.05
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -386,14 +359,15 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                     child: Text(
                       messages[index].messageContent,
                       style: GoogleFonts.inter(
-                        fontSize: 15,
+                        fontSize: screenHeight*0.018,
                         color: messages[index].messageType == "receiver"
                             ? Theme.of(context).colorScheme.tertiary
                             : Theme.of(context).colorScheme.onSecondary,
                       ),
                     ),
                   ),
-                  SizedBox(width: 4),
+                  /*
+                  SizedBox(width: 8),
                   Text(
                     messages[index].time,
                     style: GoogleFonts.inter(
@@ -401,12 +375,13 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       color: Theme.of(context).colorScheme.onTertiary,
                     ),
                   ),
+                  */
                 ],
               ),
             ),
           ),
-        ),
       );
+  }
 }
 
 /*

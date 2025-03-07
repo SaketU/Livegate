@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fullapp/screens/LiveRoomPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fullapp/widgets/customBottomSheet.dart';
+import 'package:fullapp/widgets/friendsBottomSheet.dart';
 //code
 class LiveList extends StatefulWidget{
   String league;
@@ -145,7 +145,7 @@ class _LiveListState extends State<LiveList> {
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
                                     context: context,
-                                    builder: (context) => const CustomBottomSheet(),
+                                    builder: (context) => FriendsBottomSheet(),
                                   );
                                 },
                                 icon: Icon(
@@ -179,7 +179,7 @@ class _LiveListState extends State<LiveList> {
                             borderRadius: BorderRadius.circular(24),
                             child: Transform.scale(
                               scale: 0.8, // Adjust the scale factor to make the image smaller
-                              child: Image.network(
+                              child: Image.network(//change to svg
                                 widget.logo2,
                                 fit: BoxFit.cover, // Ensures the image covers the area appropriately
                               ),
@@ -204,7 +204,7 @@ class _LiveListState extends State<LiveList> {
                                   borderRadius: BorderRadius.circular(24),
                                   child: Transform.scale(
                                     scale: 0.8, // Adjust the scale factor to make the image smaller
-                                    child: Image.network(
+                                    child: Image.network( //change to svg
                                       widget.logo1,
                                       fit: BoxFit.cover, // Ensures the image covers the area appropriately
                                     ),
@@ -246,9 +246,13 @@ class _LiveListState extends State<LiveList> {
                             borderRadius: BorderRadius.circular(16),
                             child: Transform.scale(
                               scale: 0.8, // Adjust the scale factor to make the image smaller
-                              child: Image.network(
+                              child: SvgPicture.asset( //this change now allows me to display svg, before it was image.network
                                 widget.sport,
-                                fit: BoxFit.cover, // Ensures the image covers the area appropriately
+                                fit: BoxFit.cover,
+                                colorFilter: ColorFilter.mode(
+                                Theme.of(context).colorScheme.tertiary,  // Change to any color you need
+                                BlendMode.srcIn,  // Ensures proper color blending
+                                ), // Ensures the image covers the area appropriately
                               ),
                             ),
                           ),

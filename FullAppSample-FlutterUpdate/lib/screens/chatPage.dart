@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/chatUsersModel.dart';
+import 'package:fullapp/screens/searchPage.dart';
 import 'package:fullapp/widgets/conversationList.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/widgets/addMemberPage.dart';
 //code
 class ChatPage extends StatefulWidget {
   final VoidCallback showRequestsPage;
@@ -63,23 +65,50 @@ class _ChatPageState extends State<ChatPage> {
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 10.0),
-              child: Container(
-                  padding: EdgeInsets.only(left: 8,right: 11,top: 2,bottom: 2),
-                  height: screenHeight*0.035,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: Color(0xFFFFD80E),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.add,size: screenHeight*0.024, color: Colors.black,),
-                      SizedBox(width: 2,),
-                      Text("New",style: GoogleFonts.interTight(fontSize: screenHeight*0.017,fontWeight: FontWeight.bold, color: Colors.black),),
-                    ],
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => AddMemberPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0); // Start from bottom
+                            const end = Offset.zero; // End at normal position
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(position: offsetAnimation, child: child);
+                          },
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.only(left: 8, right: 11, top: 2, bottom: 2),
+                      height: MediaQuery.of(context).size.height * 0.035,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: Color(0xFFFFD80E),
+                      ),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.add, size: MediaQuery.of(context).size.height * 0.024, color: Colors.black),
+                          SizedBox(width: 2),
+                          Text(
+                            "New",
+                            style: GoogleFonts.interTight(
+                              fontSize: MediaQuery.of(context).size.height * 0.017,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-            ),
+
 
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
@@ -110,46 +139,71 @@ class _ChatPageState extends State<ChatPage> {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(left: 16, top: 5, right: 16),
-              child: Container(
-                width: double.infinity,
-                height: screenHeight*0.047,
-                child: TextField(
-                  cursorColor: Colors.grey,
-                  decoration: InputDecoration(
-                    hintText: "Search...",
-                    hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),
-                    prefixIcon: Padding(
-                      padding: EdgeInsets.all(10), // Adjust padding as needed
-                      child: SizedBox(
-                        width: 20,  // Adjust the width to fit well
-                        height: 20,  // Adjust the height
-                        child: SvgPicture.asset(
-                          'assets/search-icon.svg',
-                          colorFilter: ColorFilter.mode(
-                            Colors.grey.shade600,  
-                            BlendMode.srcIn,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => SearchPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: "searchBar",
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      width: double.infinity,
+                      height: screenHeight * 0.047,
+                      child: IgnorePointer( // Prevents interaction in original screen
+                        child: TextField(
+                          cursorColor: Colors.grey,
+                          decoration: InputDecoration(
+                            hintText: "Search...",
+                            hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),
+                            prefixIcon: Padding(
+                              padding: EdgeInsets.all(10),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: SvgPicture.asset(
+                                  'assets/search-icon.svg',
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.grey.shade600,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Theme.of(context).brightness == Brightness.dark
+                                ? Color(0Xff242525)
+                                : Colors.black12,
+                            contentPadding: EdgeInsets.only(top: 3, bottom: 3, left: 1),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.transparent,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Colors.black12),
+                            ),
                           ),
                         ),
                       ),
-                    ),//Icon(Icons.search,color: Colors.grey.shade600,size: 25,),
-                    filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark?
-                    Color(0Xff242525) :Colors.black12,
-                    contentPadding: EdgeInsets.only(top: 3, bottom: 3, left: 1),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: Colors.transparent,
-                        )
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.black12),
                     ),
                   ),
                 ),
               ),
             ),
+
+
+
       
             Padding(
                 padding: EdgeInsets.only(top: 19, right: 16, left: 16),

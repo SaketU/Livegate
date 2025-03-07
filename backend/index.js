@@ -8,9 +8,13 @@ const jwt = require('jsonwebtoken');
 const { authenticateToken } = require('./utils/utilities');
 const User = require('./models/user.model');
 const validator = require('validator');
-const sendVerificationEmail = require('./utils/emailVerification');
+//const sendVerificationEmail = require('./utils/emailVerification');
 
-mongoose.connect(config.connectionString);
+mongoose.connect(config.connectionString)
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error("MongoDB connection error:", err));
+
+
 
 const app = express();
 app.use(express.json());

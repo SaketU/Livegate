@@ -6,6 +6,7 @@ import 'package:fullapp/widgets/chats.dart';
 import 'package:fullapp/widgets/liveList.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/screens/searchPage.dart';
 //code
 class LivesPage extends StatefulWidget {
 
@@ -20,7 +21,7 @@ class LivesPage extends StatefulWidget {
 
 class _LivesPageState extends State<LivesPage> {
   List<Rooms> rooms = [
-    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: 'https://cdn.iconscout.com/icon/free/png-256/free-los-angeles-lakers-logo-icon-download-in-svg-png-gif-file-formats--nba-basketball-pack-logos-icons-1593200.png?f=webp&w=256', Logo2: 'https://res.cloudinary.com/vistaprint/images/c_scale,w_448,h_448,dpr_2/f_auto,q_auto/v1705418080/ideas-and-advice-prod/en-us/838px-Golden_State_Warriors_logo.svg_/838px-Golden_State_Warriors_logo.svg_.png?_i=AA', Sport: 'https://png.pngtree.com/png-vector/20230303/ourmid/pngtree-basketball-line-icon-vector-png-image_6630761.png', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
+    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: 'https://cdn.iconscout.com/icon/free/png-256/free-los-angeles-lakers-logo-icon-download-in-svg-png-gif-file-formats--nba-basketball-pack-logos-icons-1593200.png?f=webp&w=256', Logo2: 'https://res.cloudinary.com/vistaprint/images/c_scale,w_448,h_448,dpr_2/f_auto,q_auto/v1705418080/ideas-and-advice-prod/en-us/838px-Golden_State_Warriors_logo.svg_/838px-Golden_State_Warriors_logo.svg_.png?_i=AA', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
     Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: '', People :'1k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
     Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: '', People :'570', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
     Rooms(League: "NCAA", Team1: "Texas", Team2: "Alabama", Logo1: '', Logo2: '', Sport: '', People :'1.4k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
@@ -46,7 +47,9 @@ class _LivesPageState extends State<LivesPage> {
           slivers: [
             // SliverAppBar with floating behavior
             SliverAppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
               elevation: 0,
               floating: true,
               snap: true, // Ensures the AppBar snaps into place when scrolling up
@@ -56,9 +59,21 @@ class _LivesPageState extends State<LivesPage> {
                 padding: EdgeInsets.only(left: 31),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ProfilePage();
-                    }));
+                    Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0); // Start from bottom
+                            const end = Offset.zero; // End at normal position
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(position: offsetAnimation, child: child);
+                          },
+                        ),
+                      );
                   },
                   child: SvgPicture.asset(
                     'assets/Profile-Icon.svg',
@@ -83,7 +98,15 @@ class _LivesPageState extends State<LivesPage> {
                   padding: EdgeInsets.only(right: 20),
                   child: GestureDetector(
                     onTap: () {
-
+                      Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => SearchPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
+                  );
                     },
                     child: SvgPicture.asset(
                     'assets/search-icon.svg',
@@ -142,7 +165,9 @@ class _LivesPageState extends State<LivesPage> {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 65, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

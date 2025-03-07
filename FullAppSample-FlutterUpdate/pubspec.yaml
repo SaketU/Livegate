@@ -106,6 +106,10 @@ flutter:
     - assets/stickers.svg
     - assets/report.svg
     - assets/camera.svg
+    - assets/download.svg
+    - assets/link.svg
+    - assets/upload.svg
+    - assets/logos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

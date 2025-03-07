@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/Rooms.dart';
-import 'package:fullapp/screens/chatDocumentsPage.dart';
-import 'package:fullapp/screens/chatPage.dart';
+import 'package:fullapp/models/moreLeagues.dart';
 import 'package:fullapp/screens/profilePage.dart';
-import 'package:fullapp/screens/usersProfilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
-import 'package:fullapp/widgets/feedButtons.dart';
-import 'package:fullapp/widgets/feedPosts.dart';
-import 'package:flutter/material.dart';
-import 'package:fullapp/widgets/liveList.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:fullapp/screens/exProfilePage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 //code
@@ -27,9 +19,16 @@ class MoreOptions extends StatefulWidget {
 }
 
 class _MoreOptionsState extends State<MoreOptions> {
-  List<Rooms> rooms = [
-    Rooms(League: "NBA", Team1: "Lakers",Team2: "Warrios", Logo1: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Logo2: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Sport: '', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
-  ];
+  List<Leagues> leagues = [
+    Leagues(league: 'NFL', leagueLogo: 'assets/logos/NFL.svg'),
+    Leagues(league: 'NBA', leagueLogo: 'assets/logos/NBA.svg'),
+    Leagues(league: 'MLB', leagueLogo: 'assets/logos/MLB.svg'),
+    Leagues(league: 'NHL', leagueLogo: 'assets/logos/NHL.svg'),
+    Leagues(league: 'NCAAF', leagueLogo: 'assets/logos/NCAA.svg'),
+    Leagues(league: 'NCAA BASK', leagueLogo: 'assets/logos/NCAA.svg'),
+    Leagues(league: 'NCAA BASE', leagueLogo: 'assets/logos/NCAA.svg'),
+    Leagues(league: 'F1', leagueLogo: 'assets/logos/F1.svg'),
+    ];
 
 @override
   Widget build(BuildContext context) {
@@ -44,7 +43,9 @@ class _MoreOptionsState extends State<MoreOptions> {
           slivers: [
             // SliverAppBar with floating behavior
             SliverAppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
               elevation: 0,
               floating: true,
               snap: true, // Ensures the AppBar snaps into place when scrolling up
@@ -113,25 +114,6 @@ class _MoreOptionsState extends State<MoreOptions> {
                       ),
                   ),
                 ),
-                /*
-                IconButton(
-                  padding: EdgeInsets.only(right: 31),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
-                    }));
-                  },
-                  icon: Transform(
-                    transform: Matrix4.identity()..scale(1, 1.15),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      size: 24,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                  ),
-                ),
-                */
               ],
         
               // Add the row as part of the AppBar's bottom
@@ -140,7 +122,9 @@ class _MoreOptionsState extends State<MoreOptions> {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 65, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).brightness == Brightness.dark
+                ? Color(0xFF121212)
+                : Colors.white,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,12 +168,18 @@ class _MoreOptionsState extends State<MoreOptions> {
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
-              sliver: SliverList(
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 3 items per row
+                  mainAxisSpacing: 15, // Adjust for spacing between rows
+                  crossAxisSpacing: 10, // Adjust for spacing between columns
+                  childAspectRatio: 1, // Adjust for shape of items
+                ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    
+                    return _buildLeagueItem(context, leagues[index]);
                   },
-                  childCount: rooms.length,
+                  childCount: leagues.length,
                 ),
               ),
             ),
@@ -199,6 +189,49 @@ class _MoreOptionsState extends State<MoreOptions> {
     );
   }
 }
+
+Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
+  double screenHeight = MediaQuery.of(context).size.height;
+  double screenWidth = MediaQuery.of(context).size.width;
+  return Padding(
+    padding: EdgeInsets.only(bottom: screenHeight*0.013),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: screenWidth * 0.30,
+          height: screenWidth * 0.30,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[800]
+                : Colors.grey[200],
+          ),
+          child: Center(
+            child: SvgPicture.asset(
+              leagues.leagueLogo,
+              width: screenWidth * 0.15,//0.095
+              height: screenWidth * 0.15,
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
+        SizedBox(height: screenHeight * 0.01),
+        Text(
+          leagues.league,
+          style: GoogleFonts.interTight(
+            fontSize: screenWidth * 0.035,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 /*
   @override
   Widget build(BuildContext context) {

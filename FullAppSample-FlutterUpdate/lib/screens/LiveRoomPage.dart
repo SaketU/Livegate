@@ -11,7 +11,7 @@ import 'package:fullapp/models/Rooms.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fullapp/widgets/customBottomSheet.dart';
+import 'package:fullapp/widgets/friendsBottomSheet.dart';
 
 class LiveRoomPage extends StatefulWidget {
 
@@ -200,7 +200,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             isScrollControlled: true,
                             backgroundColor: Colors.transparent,
                             context: context,
-                            builder: (context) => const CustomBottomSheet(),
+                            builder: (context) => FriendsBottomSheet(),
                           );
                         },
                   child: 
@@ -389,7 +389,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                           Colors.grey[800]: Theme.of(context).colorScheme.secondary),//dark mode : light mode
                     ),
                     padding:
-                        EdgeInsets.symmetric(vertical: 8, horizontal: 17),
+                        EdgeInsets.symmetric(vertical: 10, horizontal: 17),
                     child: Text(
                       messages[index].messageContent,
                       style: GoogleFonts.interTight(

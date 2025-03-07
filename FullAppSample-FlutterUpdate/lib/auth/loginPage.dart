@@ -1,8 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fullapp/intro_screens/onboardingPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fullapp/models/square_tile.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+
 //code
 class LoginPage extends StatefulWidget {
   final VoidCallback showSignUpPage;
@@ -18,11 +23,46 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   Future logIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
+    final url = Uri.parse('http://localhost:8000/login');
+
+
+    try {
+    final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+    'email': _emailController.text.trim(),
+    'password': _passwordController.text.trim(),
+    }),
     );
+
+
+    final responseBody = jsonDecode(response.body);
+
+
+    if (response.statusCode == 200) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')),
+    );
+
+
+    // Navigate to home page after successful login
+    Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => OnBoardingPage()),
+    );
+    } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(responseBody['message'] ?? 'Login Failed')),
+    );
+    }
+    } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error: $e')),
+    );
+    }
   }
+
 
   @override
   void dispose() {
@@ -52,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             SizedBox(height: screenHeight * 0.034),
-            
+
             // Username textfield
             Container(
               height: 48,

@@ -10,11 +10,7 @@ const User = require('./models/user.model');
 const validator = require('validator');
 //const sendVerificationEmail = require('./utils/emailVerification');
 
-mongoose.connect(config.connectionString)
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.error("MongoDB connection error:", err));
-
-
+mongoose.connect(config.connectionString);
 
 const app = express();
 app.use(express.json());
@@ -110,38 +106,38 @@ app.post('/set-password', async (req, res) => {
       return res.status(500).json({ error: true, message: "Server error" });
     }
   });
-  
 
 
 
 
-//verification endpoint to update isVerified to true
-app.get('/verify-email', async (req, res) => {
-    const token = req.query.token;
-    if (!token) {
-      return res.status(400).json({ message: "Invalid token" });
-    }
 
-    try {
-      //verify token
-      const payload = jwt.verify(token, process.env.EMAIL_SECRET);
-      const userId = payload.userId;
+// //verification endpoint to update isVerified to true
+// app.get('/verify-email', async (req, res) => {
+//     const token = req.query.token;
+//     if (!token) {
+//       return res.status(400).json({ message: "Invalid token" });
+//     }
 
-      //find the user and update verification status
-      const user = await User.findById(userId);
-        if (!user) {
-            console.error("User not found for userId:", userId);
-            return res.status(400).json({ message: "User not found" });
-        }
-        // Then update
-        const updatedUser = await User.findByIdAndUpdate(userId, { isVerified: true }, { new: true });
+//     try {
+//       //verify token
+//       const payload = jwt.verify(token, process.env.EMAIL_SECRET);
+//       const userId = payload.userId;
 
-      //redirect or send a success message
-      return res.status(200).json({ message: "Email verified successfully!", user });
-    } catch (error) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-  });
+//       //find the user and update verification status
+//       const user = await User.findById(userId);
+//         if (!user) {
+//             console.error("User not found for userId:", userId);
+//             return res.status(400).json({ message: "User not found" });
+//         }
+//         // Then update
+//         const updatedUser = await User.findByIdAndUpdate(userId, { isVerified: true }, { new: true });
+
+//       //redirect or send a success message
+//       return res.status(200).json({ message: "Email verified successfully!", user });
+//     } catch (error) {
+//       return res.status(400).json({ message: "Invalid or expired token" });
+//     }
+//   });
 
 
 //handles login
@@ -158,9 +154,9 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ message: "User not found" });
     }
 
-    if (!user.isVerified) {
-        return res.status(403).json({ message: "Please verify your email before logging in." });
-    }
+    // if (!user.isVerified) {
+    //     return res.status(403).json({ message: "Please verify your email before logging in." });
+    // }
 
     //validates password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -200,6 +196,14 @@ app.get('/get-user', authenticateToken, async (req, res) => {
         user: isUser,
         message: "",
     });
+});
+
+// put message in chat
+app.post('/put-message', authenticateToken, async (req, res) => {
+
+
+
+
 });
 
 

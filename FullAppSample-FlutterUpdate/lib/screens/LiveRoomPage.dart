@@ -12,6 +12,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/widgets/friendsBottomSheet.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LiveRoomPage extends StatefulWidget {
 
@@ -120,6 +122,24 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         messageType: "receiver",
         selected: true),
   ];
+
+  Future<void> sendMessage(String gameId, String messageText) async {
+  final url = Uri.parse('http://localhost:8000/nba-message');
+
+  final response = await http.post(
+    url,
+    headers: {"Content-Type": "application/json"},
+    body: jsonEncode({"message": messageText}),
+  );
+
+  if (response.statusCode == 200) {
+
+    print("Message sent successfully");
+  } else {
+
+    print("Error sending message: ${response.body}");
+  }
+}
 
   @override
   void initState() {
@@ -299,10 +319,25 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                       padding: const EdgeInsets.only(right: 18),
                       child: GestureDetector(
                         onTap: _isTyping
-                            ? () {
-                                // Handle message send action
+                          ? () async {
+                              // Retrieve and trim the text from the TextField
+                              String messageText = _controller.text.trim();
+                              if (messageText.isNotEmpty) {
+                                RoomMessage newMessage = RoomMessage(
+                                  name: '@YourName',
+                                  profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+                                  messageContent: messageText,
+                                  messageType: "sender",
+                                  selected: true,
+                                );
+                                setState(() {
+                                  messages.insert(0, newMessage);
+                                });
+                                await sendMessage('GAME_ID', messageText);
+                                _controller.clear();
                               }
-                            : null,
+                            }
+                          : null,
                         child: Container(
                           height: screenHeight * 0.040,
                           width: screenHeight * 0.040,

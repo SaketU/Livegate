@@ -7,7 +7,11 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { authenticateToken } = require('./utils/utilities');
 const User = require('./models/user.model');
+const NBAgame = require('./models/NBAgame.model');
 const validator = require('validator');
+
+const http = require('http');
+const socketIo = require('socket.io');
 //const sendVerificationEmail = require('./utils/emailVerification');
 
 mongoose.connect(config.connectionString);
@@ -205,6 +209,55 @@ app.post('/put-message', authenticateToken, async (req, res) => {
 
 
 });
+
+app.post('/set-leagues', authenticateToken, async (req, res) => {
+  const { leagues } = req.body;
+  if (!Array.isArray(leagues)) {
+    return res.status(400).json({ error: true, message: "Leagues must be an array." });
+  }
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $push: { leaguePreferences: { $each: leagues } } },
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ error: true, message: "User not found." });
+    }
+    return res.status(200).json({ 
+      error: false, 
+      message: "Leagues added successfully.", 
+      leaguePreferences: updatedUser.leaguePreferences 
+    });
+  } catch (error) {
+    console.error("Error updating league preferences:", error);
+    return res.status(500).json({ error: true, message: "Server error" });
+  }
+});
+
+app.post('/nba-message', async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    const { message } = req.body;
+
+    //update the document by pushing the new message to the chat array.
+    const updatedGame = await NBAgame.findByIdAndUpdate(
+      gameId,
+      { $push: { chat: message } },
+      { new: true } //return the updated document.
+    );
+
+    if (!updatedGame) {
+      return res.status(404).json({ success: false, message: 'Game not found' });
+    }
+
+    res.json({ success: true, game: updatedGame });
+  } catch (error) {
+    console.error('Error updating chat array:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 
 
 app.listen(8000);

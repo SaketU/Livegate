@@ -7,6 +7,10 @@ import 'package:fullapp/models/square_tile.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+final FlutterSecureStorage storage = FlutterSecureStorage();
+
 
 //code
 class LoginPage extends StatefulWidget {
@@ -41,6 +45,11 @@ class _LoginPageState extends State<LoginPage> {
 
 
     if (response.statusCode == 200) {
+
+    String token = responseBody['accessToken'];
+    await storage.write(key: 'accessToken', value: token);
+
+
     ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')),
     );

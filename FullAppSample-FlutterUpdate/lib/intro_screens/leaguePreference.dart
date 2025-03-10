@@ -4,6 +4,11 @@ import 'package:fullapp/intro_screens/onboardingPage.dart';
 import 'package:fullapp/auth/passwordPage.dart';
 import 'package:fullapp/screens/chatPage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+final FlutterSecureStorage storage = FlutterSecureStorage();
 
 class LeaguePreferencePage extends StatefulWidget {
   @override
@@ -36,6 +41,45 @@ class _LeaguePreferencePageState extends State<LeaguePreferencePage> {
       }
     });
   }
+
+  // Function to send the selected leagues to the backend using the stored token.
+  Future<void> setLeaguePreferences() async {
+  final token = await storage.read(key: 'accessToken');
+  if (token == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("No access token found. Please log in again.")),
+    );
+    return;
+  }
+
+  final url = Uri.parse('http://localhost:8000/set-leagues'); // Adjust URL if needed.
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'leagues': selectedleagues}),
+    );
+
+    if (response.statusCode == 200) {
+      // Navigate to OnBoardingPage after successful update.
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => OnBoardingPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to update league preferences.")),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: $e")),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -133,12 +177,14 @@ class _LeaguePreferencePageState extends State<LeaguePreferencePage> {
               Spacer(),
 
               ElevatedButton(
-                onPressed: selectedleagues.isNotEmpty ? () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context){
-                      return OnBoardingPage();
-                    }));
+                onPressed: selectedleagues.isNotEmpty ? () async {
+                  await setLeaguePreferences();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => OnBoardingPage()),
+                  );
                 } : null,
-                style: ElevatedButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
                   minimumSize: Size(double.infinity, 48),
                   backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(

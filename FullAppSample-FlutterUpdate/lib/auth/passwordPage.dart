@@ -5,8 +5,11 @@ import 'package:fullapp/intro_screens/leaguePreference.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fullapp/models/square_tile.dart';
 import 'package:fullapp/auth/verificationCodePage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+final FlutterSecureStorage storage = FlutterSecureStorage();
 
 
 //added fullname and email as parameters
@@ -39,55 +42,60 @@ class _PasswordPageState extends State<PasswordPage> {
   }
 
   Future<bool> confirmPassword() async {
-  if (!passwordConfirmed()) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Passwords do not match.")),
-    );
-    return false;
-  }
-
-  final url = Uri.parse('http://localhost:8000/set-password');
-
-  try {
-    final body = jsonEncode({
-      'fullName': widget.fullName,
-      'email': widget.email,
-      'username': _usernameController.text.trim(),
-      'password': _passwordController.text.trim(),
-      'confirmPassword': _confirmPasswordController.text.trim(),
-    });
-
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: body,
-    );
-
-    final responseBody = jsonDecode(response.body);
-
-    if (response.statusCode == 200) {
+    if (!passwordConfirmed()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(responseBody['message'] ?? 'Account created successfully'),
-        ),
-      );
-      return true;
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(responseBody['message'] ?? 'Error creating account'),
-        ),
+        SnackBar(content: Text("Passwords do not match.")),
       );
       return false;
     }
-  } catch (e) {
-    print('Error: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error: $e")),
-    );
-    return false;
+
+    final url = Uri.parse('http://localhost:8000/set-password');
+    try {
+      final body = jsonEncode({
+        'fullName': widget.fullName,
+        'email': widget.email,
+        'username': _usernameController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'confirmPassword': _confirmPasswordController.text.trim(),
+      });
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      final responseBody = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // Save the JWT token securely.
+        final String token = responseBody['accessToken'];
+        await storage.write(key: 'accessToken', value: token);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseBody['message'] ??
+                'Account created successfully'),
+          ),
+        );
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(responseBody['message'] ??
+                'Error creating account'),
+          ),
+        );
+        return false;
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+      return false;
+    }
   }
-}
 
 bool passwordConfirmed() {
   return _passwordController.text.trim() ==

@@ -10,8 +10,8 @@ const User = require('./models/user.model');
 const NBAgame = require('./models/NBAgame.model');
 const validator = require('validator');
 
-const http = require('http');
-const socketIo = require('socket.io');
+// const http = require('http');
+// const socketIo = require('socket.io');
 //const sendVerificationEmail = require('./utils/emailVerification');
 
 mongoose.connect(config.connectionString);
@@ -152,8 +152,10 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ message: "Email and Password are requiured" });
     }
 
+    const query = validator.isEmail(email) ? { email: email } : { username: email };
+
     //looks for user email
-    const user = await User.findOne({ email });
+    const user = await User.findOne(query);
     if (!user) {
         return res.status(400).json({ message: "User not found" });
     }
@@ -202,14 +204,6 @@ app.get('/get-user', authenticateToken, async (req, res) => {
     });
 });
 
-// put message in chat
-app.post('/put-message', authenticateToken, async (req, res) => {
-
-
-
-
-});
-
 app.post('/set-leagues', authenticateToken, async (req, res) => {
   const { leagues } = req.body;
   if (!Array.isArray(leagues)) {
@@ -224,10 +218,10 @@ app.post('/set-leagues', authenticateToken, async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ error: true, message: "User not found." });
     }
-    return res.status(200).json({ 
-      error: false, 
-      message: "Leagues added successfully.", 
-      leaguePreferences: updatedUser.leaguePreferences 
+    return res.status(200).json({
+      error: false,
+      message: "Leagues added successfully.",
+      leaguePreferences: updatedUser.leaguePreferences
     });
   } catch (error) {
     console.error("Error updating league preferences:", error);

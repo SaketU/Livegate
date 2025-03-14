@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/Rooms.dart';
 import 'package:fullapp/models/moreLeagues.dart';
+import 'package:fullapp/screens/NBALivesPage.dart';
 import 'package:fullapp/screens/profilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/screens/NBALivesPage.dart';
 //code
 class MoreOptions extends StatefulWidget {
 
@@ -25,8 +27,8 @@ class _MoreOptionsState extends State<MoreOptions> {
     Leagues(league: 'MLB', leagueLogo: 'assets/logos/MLB.svg'),
     Leagues(league: 'NHL', leagueLogo: 'assets/logos/NHL.svg'),
     Leagues(league: 'NCAAF', leagueLogo: 'assets/logos/NCAA.svg'),
-    Leagues(league: 'NCAA BASK', leagueLogo: 'assets/logos/NCAA.svg'),
-    Leagues(league: 'NCAA BASE', leagueLogo: 'assets/logos/NCAA.svg'),
+    Leagues(league: 'NCAAB', leagueLogo: 'assets/logos/NCAA.svg'),
+    Leagues(league: 'College Baseball', leagueLogo: 'assets/logos/NCAA.svg'),
     Leagues(league: 'F1', leagueLogo: 'assets/logos/F1.svg'),
     ];
 
@@ -191,43 +193,51 @@ class _MoreOptionsState extends State<MoreOptions> {
 }
 
 Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
+  
   double screenHeight = MediaQuery.of(context).size.height;
   double screenWidth = MediaQuery.of(context).size.width;
-  return Padding(
-    padding: EdgeInsets.only(bottom: screenHeight*0.013),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: screenWidth * 0.30,
-          height: screenWidth * 0.30,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.grey[800]
-                : Colors.grey[200],
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              leagues.leagueLogo,
-              width: screenWidth * 0.15,//0.095
-              height: screenWidth * 0.15,
-              fit: BoxFit.fill,
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return NBALivesPage();
+        }));
+    },
+    child: Padding(
+      padding: EdgeInsets.only(bottom: screenHeight*0.013),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: screenWidth * 0.30,
+            height: screenWidth * 0.30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[800]
+                  : Colors.grey[200],
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                leagues.leagueLogo,
+                width: screenWidth * 0.15,//0.095
+                height: screenWidth * 0.15,
+                fit: BoxFit.fill,
+              ),
             ),
           ),
-        ),
-        SizedBox(height: screenHeight * 0.01),
-        Text(
-          leagues.league,
-          style: GoogleFonts.interTight(
-            fontSize: screenWidth * 0.035,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
+          SizedBox(height: screenHeight * 0.01),
+          Text(
+            leagues.league,
+            style: GoogleFonts.interTight(
+              fontSize: screenWidth * 0.035,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

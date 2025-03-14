@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/auth/authPage.dart';
+import 'package:fullapp/screens/displayPage.dart';
 import 'package:fullapp/screens/editProfilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -199,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
+                      return DisplayPage();
                     }));
                   },
                   style: ElevatedButton.styleFrom(

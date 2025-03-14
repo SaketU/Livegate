@@ -31,7 +31,10 @@ class _LiveListState extends State<LiveList> {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return LiveRoomPage();
+          return LiveRoomPage(
+            team1: widget.team1,
+            team2: widget.team2,
+          );
         }));
       },
       child: Padding(
@@ -179,7 +182,7 @@ class _LiveListState extends State<LiveList> {
                             borderRadius: BorderRadius.circular(24),
                             child: Transform.scale(
                               scale: 0.8, // Adjust the scale factor to make the image smaller
-                              child: Image.network(//change to svg
+                              child: SvgPicture.network(//change to svg
                                 widget.logo2,
                                 fit: BoxFit.cover, // Ensures the image covers the area appropriately
                               ),
@@ -204,7 +207,7 @@ class _LiveListState extends State<LiveList> {
                                   borderRadius: BorderRadius.circular(24),
                                   child: Transform.scale(
                                     scale: 0.8, // Adjust the scale factor to make the image smaller
-                                    child: Image.network( //change to svg
+                                    child: SvgPicture.network( //change to svg
                                       widget.logo1,
                                       fit: BoxFit.cover, // Ensures the image covers the area appropriately
                                     ),

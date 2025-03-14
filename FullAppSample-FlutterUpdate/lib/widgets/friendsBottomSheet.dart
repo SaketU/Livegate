@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/screens/chatDetailPage.dart';
+import 'package:fullapp/screens/profilePage.dart';
 import 'package:fullapp/screens/searchPage.dart';
 import 'package:fullapp/screens/shareSearchPage.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -220,7 +221,7 @@ void dispose() {
                   child: ElevatedButton(
                     onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context){
-                  return ChatDetailPage();
+                  return ProfilePage();
                 }));
                                   },
                     style: ElevatedButton.styleFrom(

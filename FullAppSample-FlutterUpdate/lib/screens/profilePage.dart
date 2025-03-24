@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/auth/authPage.dart';
+import 'package:fullapp/screens/aboutPage.dart';
 import 'package:fullapp/screens/displayPage.dart';
 import 'package:fullapp/screens/editProfilePage.dart';
+import 'package:fullapp/screens/helpPage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -255,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
+                      return HelpPage();
                     }));
                   },
                   style: ElevatedButton.styleFrom(
@@ -309,7 +311,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
+                      return AboutPage();
                     }));
                   },
                   style: ElevatedButton.styleFrom(
@@ -364,7 +366,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onPressed: _signUserOut,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
+                    ? Colors.blue
                     : Theme
                       .of(context)
                       .colorScheme

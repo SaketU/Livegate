@@ -11,6 +11,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fullapp/themes/dark_theme.dart';
 import 'package:fullapp/themes/light_theme.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 //code
 void main() async {
@@ -19,11 +21,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  ThemeProvider themeProvider = await ThemeProvider.create(); // Load saved theme
+
   runApp(
     DevicePreview(
       enabled: !kReleaseMode, // Enable device preview in debug mode
-      builder: (context) => ChangeNotifierProvider(
-        create: (_) => ThemeProvider(lightTheme), // Default theme is light
+      builder: (context) => ChangeNotifierProvider.value(
+        value: themeProvider, // Provide the loaded theme
         child: MyApp(),
       ),
     ),
@@ -42,9 +46,9 @@ class MyApp extends StatelessWidget {
           locale: DevicePreview.locale(context),
           builder: DevicePreview.appBuilder,
           title: 'Flutter Demo',
-          theme: themeProvider.themeData, // Dynamically apply the theme
+          theme: themeProvider.themeData, // Apply saved theme
           debugShowCheckedModeBanner: false,
-          home: MainPage(), // Ensure this is your correct home page
+          home: MainPage(),
         );
       },
     );

@@ -22,146 +22,155 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
   double _opacity = 1.0; // Controls fade-out effect
 
   void _fadeAndNavigate() {
-    setState(() {
-      _opacity = 0.0; // Start fade-out animation
-    });
+  setState(() {
+    _opacity = 0.0; // Fade out content only, not background
+  });
 
-    Future.delayed(Duration(milliseconds: 800), () {
-      Navigator.of(context).pushReplacement(_fadeRoute(LivePages())); // Transition after fade-out
-    });
-  }
+  Future.delayed(Duration(milliseconds: 800), () {
+    Navigator.of(context).pushReplacement(_fadeRoute(LivePages()));
+  });
+}
 
   @override
-  Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
+Widget build(BuildContext context) {
+  double screenHeight = MediaQuery.of(context).size.height;
 
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: Duration(milliseconds: 800),
-      curve: Curves.easeOut,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          elevation: 0,
-          leading: currentPage > 0
-              ? IconButton(
-                  onPressed: () {
-                    _controller.previousPage(
-                      duration: Duration(milliseconds: 700),
-                      curve: Curves.easeOut,
-                    );
-                  },
-                  icon: Icon(
-                    CupertinoIcons.back,
-                    size: 30,
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(),
-                )
-              : null,
-        ),
-        body: Stack(
-          children: [
-            PageView(
-              controller: _controller,
-              physics: PageScrollPhysics(),
-              onPageChanged: (index) {
-                setState(() {
-                  currentPage = index;
-                  onLastPage = (index == 3);
-                });
-              },
-              children: [
-                IntroPage1(),
-                IntroPage2(),
-                IntroPage3(),
-                IntroPage4(),
-              ],
-            ),
-            Container(
-              alignment: Alignment(-0.77, 0.265),
-              child: buildIndicator(),
-            ),
-            Container(
-              padding: EdgeInsets.only(left: 43, right: 43, top: 10),
-              alignment: Alignment(0, 0.85),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: _fadeAndNavigate,
-                    child: Text(
-                      'Skip',
-                      style: GoogleFonts.interTight(color: Colors.grey, fontSize: 15),
+  return Stack(
+    children: [
+      // Ensure the background remains visible
+      Container(
+        color: Theme.of(context).colorScheme.surface, // Ensures consistent background color
+      ),
+      AnimatedOpacity(
+        opacity: _opacity,
+        duration: Duration(milliseconds: 800),
+        curve: Curves.easeOut,
+        child: Scaffold(
+          backgroundColor: Colors.transparent, // Prevents black background
+          appBar: AppBar(
+            backgroundColor: Colors.transparent, // Keeps transition smooth
+            elevation: 0,
+            leading: currentPage > 0
+                ? IconButton(
+                    onPressed: () {
+                      _controller.previousPage(
+                        duration: Duration(milliseconds: 700),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    icon: Icon(
+                      CupertinoIcons.back,
+                      size: 30,
+                      color: Theme.of(context).colorScheme.tertiary,
                     ),
-                  ),
-                  onLastPage
-                      ? GestureDetector(
-                          onTap: _fadeAndNavigate,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.0115,
-                              horizontal: screenHeight * 0.0345,
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  )
+                : null,
+          ),
+          body: Stack(
+            children: [
+              PageView(
+                controller: _controller,
+                physics: PageScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() {
+                    currentPage = index;
+                    onLastPage = (index == 3);
+                  });
+                },
+                children: [
+                  IntroPage1(),
+                  IntroPage2(),
+                  IntroPage3(),
+                  IntroPage4(),
+                ],
+              ),
+              Container(
+                alignment: Alignment(-0.77, 0.265),
+                child: buildIndicator(),
+              ),
+              Container(
+                padding: EdgeInsets.only(left: 43, right: 43, top: 10),
+                alignment: Alignment(0, 0.85),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: _fadeAndNavigate,
+                      child: Text(
+                        'Skip',
+                        style: GoogleFonts.interTight(color: Colors.grey, fontSize: 15),
+                      ),
+                    ),
+                    onLastPage
+                        ? GestureDetector(
+                            onTap: _fadeAndNavigate,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenHeight * 0.0115,
+                                horizontal: screenHeight * 0.0345,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.tertiary,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Text(
+                                'Done',
+                                style: GoogleFonts.interTight(
+                                  color: Theme.of(context).colorScheme.background,
+                                  fontSize: 15,
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.tertiary,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              'Done',
-                              style: GoogleFonts.interTight(
-                                color: Theme.of(context).colorScheme.background,
-                                fontSize: 15,
+                          )
+                        : GestureDetector(
+                            onTap: () {
+                              _controller.nextPage(
+                                duration: Duration(milliseconds: 700),
+                                curve: Curves.easeOut,
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.only(
+                                top: screenHeight * 0.012,
+                                bottom: screenHeight * 0.012,
+                                left: screenHeight * 0.025,
+                                right: screenHeight * 0.011,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.tertiary,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Next',
+                                    style: GoogleFonts.interTight(
+                                      color: Theme.of(context).colorScheme.background,
+                                    ),
+                                  ),
+                                  SizedBox(width: 14),
+                                  Icon(
+                                    CupertinoIcons.forward,
+                                    color: Theme.of(context).colorScheme.background,
+                                    size: 20,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                        )
-                      : GestureDetector(
-                          onTap: () {
-                            _controller.nextPage(
-                              duration: Duration(milliseconds: 700),
-                              curve: Curves.easeOut,
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.only(
-                              top: screenHeight * 0.012,
-                              bottom: screenHeight * 0.012,
-                              left: screenHeight * 0.025,
-                              right: screenHeight * 0.011,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.tertiary,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Next',
-                                  style: GoogleFonts.interTight(
-                                    color: Theme.of(context).colorScheme.background,
-                                  ),
-                                ),
-                                SizedBox(width: 14),
-                                Icon(
-                                  CupertinoIcons.forward,
-                                  color: Theme.of(context).colorScheme.background,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
+
 
   Widget buildIndicator() => SmoothPageIndicator(
         controller: _controller,

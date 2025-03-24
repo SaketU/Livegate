@@ -5,17 +5,30 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:fullapp/themes/light_theme.dart';
 import 'package:fullapp/themes/dark_theme.dart';// Import dark theme
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeData _themeData;
+  bool _isDarkMode;
 
-  ThemeProvider(this._themeData);
+  ThemeProvider(this._themeData, this._isDarkMode);
 
   ThemeData get themeData => _themeData;
+  bool get isDarkMode => _isDarkMode;
 
-  void toggleTheme(bool isDark) {
+  void toggleTheme(bool isDark) async {
+    _isDarkMode = isDark;
     _themeData = isDark ? darkTheme : lightTheme;
     notifyListeners();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDarkMode', isDark); // Save theme preference
+  }
+
+  static Future<ThemeProvider> create() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isDarkMode = prefs.getBool('isDarkMode') ?? false; // Load theme preference
+    return ThemeProvider(isDarkMode ? darkTheme : lightTheme, isDarkMode);
   }
 }
 
@@ -24,7 +37,7 @@ class DisplayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-    bool isDarkMode = Provider.of<ThemeProvider>(context).themeData == darkTheme;
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,

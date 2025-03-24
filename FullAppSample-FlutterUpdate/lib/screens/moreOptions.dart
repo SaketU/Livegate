@@ -22,14 +22,14 @@ class MoreOptions extends StatefulWidget {
 
 class _MoreOptionsState extends State<MoreOptions> {
   List<Leagues> leagues = [
-    Leagues(league: 'NFL', leagueLogo: 'assets/logos/NFL.svg'),
-    Leagues(league: 'NBA', leagueLogo: 'assets/logos/NBA.svg'),
-    Leagues(league: 'MLB', leagueLogo: 'assets/logos/MLB.svg'),
-    Leagues(league: 'NHL', leagueLogo: 'assets/logos/NHL.svg'),
-    Leagues(league: 'NCAAF', leagueLogo: 'assets/logos/NCAA.svg'),
-    Leagues(league: 'NCAAB', leagueLogo: 'assets/logos/NCAA.svg'),
-    Leagues(league: 'College Baseball', leagueLogo: 'assets/logos/NCAA.svg'),
-    Leagues(league: 'F1', leagueLogo: 'assets/logos/F1.svg'),
+    Leagues(league: 'NFL', leagueLogo: 'assets/sports/football.svg'),
+    Leagues(league: 'NBA', leagueLogo: 'assets/sports/basketball.svg'),
+    Leagues(league: 'MLB', leagueLogo: 'assets/sports/baseball.svg'),
+    Leagues(league: 'NHL', leagueLogo: 'assets/sports/hockey.svg'),
+    Leagues(league: 'NCAAF', leagueLogo: 'assets/sports/football_run.svg'),
+    Leagues(league: 'NCAAB', leagueLogo: 'assets/sports/dunk.svg'),
+    Leagues(league: 'College Baseball', leagueLogo: 'assets/sports/bat.svg'),
+    Leagues(league: 'F1', leagueLogo: 'assets/sports/f1_car.svg'),
     ];
 
 @override
@@ -57,9 +57,21 @@ class _MoreOptionsState extends State<MoreOptions> {
                 padding: EdgeInsets.only(left: 31),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ProfilePage();
-                    }));
+                    Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 1.0); // Start from bottom
+                            const end = Offset.zero; // End at normal position
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+
+                            return SlideTransition(position: offsetAnimation, child: child);
+                          },
+                        ),
+                      );
                   },
                   child: SvgPicture.asset(
                     'assets/Profile-Icon.svg',
@@ -221,6 +233,10 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
                 leagues.leagueLogo,
                 width: screenWidth * 0.15,//0.095
                 height: screenWidth * 0.15,
+                colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
+                    BlendMode.srcIn,  // Ensures proper color blending
+                    ),
                 fit: BoxFit.fill,
               ),
             ),

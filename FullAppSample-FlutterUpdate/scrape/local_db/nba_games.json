@@ -1,0 +1,32 @@
+[
+    {
+        "team1": "Nets",
+        "team2": "Pacers",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg"
+    },
+    {
+        "team1": "Warriors",
+        "team2": "Hawks",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg"
+    },
+    {
+        "team1": "Wizards",
+        "team2": "Knicks",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612741/primary/L/logo.svg"
+    },
+    {
+        "team1": "Bucks",
+        "team2": "Kings",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg"
+    },
+    {
+        "team1": "Bulls",
+        "team2": "Lakers",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612749/primary/L/logo.svg"
+    }
+]

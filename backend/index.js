@@ -7,7 +7,6 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { authenticateToken } = require('./utils/utilities');
 const User = require('./models/user.model');
-const NBAgame = require('./models/NBAgame.model');
 const validator = require('validator');
 
 // const http = require('http');
@@ -15,6 +14,15 @@ const validator = require('validator');
 //const sendVerificationEmail = require('./utils/emailVerification');
 
 mongoose.connect(config.connectionString);
+
+const NBAgameDefault = require('./models/NBAgame.model');
+const NBAgameSchema = NBAgameDefault.schema;
+
+
+
+const leaguesDb = mongoose.connection.useDb('leagues');
+
+const NBAgameLeagues = leaguesDb.models.NBAgame || leaguesDb.model('NBAgame', NBAgameSchema, 'NBA');
 
 const app = express();
 app.use(express.json());
@@ -251,6 +259,29 @@ app.post('/nba-message', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// get NBA games from database
+app.get('/api/nba-games', async (req, res) => {
+  try {
+    const games = await NBAgameLeagues.find({}).sort({ createdAt: -1 }).lean();
+
+    const formattedGames = games.map(game => ({
+      id: game._id,
+      home_team: game.home_team,
+      away_team: game.away_team,
+      home_team_logo: game.home_team_logo,
+      away_team_logo: game.away_team_logo,
+      venue: game.venue || "TBD",
+      status: game.status || "Scheduled"
+    }));
+    res.json(formattedGames);
+  } catch (error) {
+    console.error("Error retrieving NBA games:", error);
+    res.status(500).json({ error: true, message: "Server error" });
+  }
+});
+
+
 
 
 

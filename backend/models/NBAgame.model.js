@@ -11,4 +11,4 @@ const NBAgameSchema = new Schema({
   status: { type: String, required: true }
 });
 
-module.exports = mongoose.model('NBAgame', NBAgameSchema);
+module.exports = mongoose.model('NBAgame', NBAgameSchema, 'NBA');

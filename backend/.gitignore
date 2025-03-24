@@ -29,3 +29,6 @@ coverage/
 .vscode/
 .idea/
 *.iml
+
+# Config files
+config.json

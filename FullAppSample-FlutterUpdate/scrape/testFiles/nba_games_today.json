@@ -1,0 +1,62 @@
+[
+    {
+        "team1": "Spurs",
+        "team2": "Wizards",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg"
+    },
+    {
+        "team1": "Hawks",
+        "team2": "Magic",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg"
+    },
+    {
+        "team1": "Timberwolves",
+        "team2": "Cavaliers",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612741/primary/L/logo.svg"
+    },
+    {
+        "team1": "Celtics",
+        "team2": "Heat",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg"
+    },
+    {
+        "team1": "Hornets",
+        "team2": "Nets",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612749/primary/L/logo.svg"
+    },
+    {
+        "team1": "Pelicans",
+        "team2": "Thunder",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612737/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612766/primary/L/logo.svg"
+    },
+    {
+        "team1": "Warriors",
+        "team2": "Bucks",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612748/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg"
+    },
+    {
+        "team1": "Kings",
+        "team2": "Mavericks",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612764/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg"
+    },
+    {
+        "team1": "Trail Blazers",
+        "team2": "Nuggets",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612760/primary/L/logo.svg"
+    },
+    {
+        "team1": "Jazz",
+        "team2": "Lakers",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612757/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612762/primary/L/logo.svg"
+    }
+]

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
-      surface: Colors.black12,//Color(0Xff242525), //shade 900 or black 26 or [850]! the original background
+      surface: Color(0xFF121212),//Color(0Xff242525), //shade 900 or black 26 or [850]! the original background
       primary: Colors.grey.shade900, //sender text (left)
       secondary: Colors.white.withValues(),//Colors.white38,//receiver text (right)
       tertiary: Colors.white, //Nav bar icons and letter on right

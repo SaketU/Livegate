@@ -243,7 +243,10 @@ class _ShareSearchPageState extends State<ShareSearchPage> with SingleTickerProv
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(context, MaterialPageRoute(builder: (context) {
-                          return ChatDetailPage();
+                          return ChatDetailPage(
+                            name: selectedFriends.first.name,
+                            profileImage: selectedFriends.first.profileImage,
+                          );
                         }));
                       },
                       style: ElevatedButton.styleFrom(

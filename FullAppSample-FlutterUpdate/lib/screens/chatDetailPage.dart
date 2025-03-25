@@ -14,6 +14,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ChatDetailPage extends StatefulWidget{
+  final String name;
+  final String profileImage;
+
+  ChatDetailPage({required this.name, required this.profileImage});
+
   @override
   _ChatDetailPageState createState() => _ChatDetailPageState();
 }
@@ -36,9 +41,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
     ChatMessage(messageContent: "At that point of the game you have nothing to loose", messageType: "sender", time: '11:43 PM', selected: true),
     ChatMessage(messageContent: "I feel like they should have gone for it on fourth down", messageType: "sender", time: '11:43 PM', selected: true),
     ChatMessage(messageContent: "yeah, they took it down to the wire", messageType: "receiver", time: '11:42 PM', selected: false),
-    ChatMessage(messageContent: "Hey John, yeah it was really good", messageType: "sender", time: '11:42 PM', selected: true),
+    ChatMessage(messageContent: "Hey, yeah it was really good", messageType: "sender", time: '11:42 PM', selected: true),
     ChatMessage(messageContent: "Did you catch the game last night?", messageType: "receiver", time: '11:41 PM', selected: false),
-    ChatMessage(messageContent: "Hey Brad", messageType: "receiver", time: '11:41 PM', selected: true),
+    ChatMessage(messageContent: "Hey", messageType: "receiver", time: '11:41 PM', selected: true),
   ];
 
   @override
@@ -84,7 +89,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               Padding(
                 padding: const EdgeInsets.only(left: 3, right: 10),
                 child: CircleAvatar(
-                  backgroundImage: NetworkImage('https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                  backgroundImage: NetworkImage(widget.profileImage),
                   maxRadius: screenHeight*0.025,
                 ),
               ),
@@ -100,7 +105,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                           }));
                         },
                         child:
-                        Text("John Murphy",style: GoogleFonts.interTight(
+                        Text(widget.name,style: GoogleFonts.interTight(
                               fontSize: screenHeight*0.0185,
                               fontWeight: FontWeight.bold,),),
                       ),
@@ -383,6 +388,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       );
   }
 }
+
+
 
 /*
   @override

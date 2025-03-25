@@ -31,7 +31,7 @@ class _LiveListState extends State<LiveList> {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return LiveRoomPage();
+          return LiveRoomPage(team1: widget.team1, team2: widget.team2);
         }));
       },
       child: Padding(

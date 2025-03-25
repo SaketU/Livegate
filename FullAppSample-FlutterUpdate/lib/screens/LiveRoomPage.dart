@@ -16,6 +16,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class LiveRoomPage extends StatefulWidget {
+  final String team1;
+  final String team2;
+
+  LiveRoomPage({required this.team1, required this.team2});
 
   @override
   _LiveRoomPageState createState() => _LiveRoomPageState();
@@ -183,14 +187,34 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 3, right: 5),
-                child: Text(
-                  "Lakers vs Warriors",
-                  style: GoogleFonts.interTight(
-                    fontSize: screenHeight * 0.018,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                child: Row(
+                      children: [
+                        Text(
+                          widget.team1,
+                          style: GoogleFonts.interTight(
+                            fontSize: screenHeight * 0.018,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
+                        Text(
+                      ' vs ',
+                      style: GoogleFonts.interTight(
+                        fontSize: screenHeight * 0.018,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                        Text(
+                      widget.team2,
+                      style: GoogleFonts.interTight(
+                        fontSize: screenHeight * 0.018,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                      ],
+                    ),
               ),
               Text(
                 '1 hr',
@@ -603,7 +627,6 @@ Stack(
                   )
                 ]
             ),
-        
           ],
         ),
         */

@@ -11,6 +11,7 @@ class Rooms {
   String Remain;
   String state;
   IconData icon;
+  String gameId;
 
   Rooms({
     required this.League,
@@ -23,6 +24,7 @@ class Rooms {
     required this.Remain,
     required this.state,
     required this.icon,
+    required this.gameId,
   });
 
 
@@ -38,6 +40,7 @@ class Rooms {
       Remain: json['remain'] ?? 'TBD',
       state: json['status'] ?? 'Scheduled',
       icon: CupertinoIcons.dot_radiowaves_left_right,
+      gameId: json['id']?.toString() ?? '',
     );
   }
 }

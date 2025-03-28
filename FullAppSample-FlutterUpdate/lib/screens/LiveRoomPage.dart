@@ -18,8 +18,9 @@ import 'package:http/http.dart' as http;
 class LiveRoomPage extends StatefulWidget {
   final String team1;
   final String team2;
+  final String gameId;
 
-  LiveRoomPage({required this.team1, required this.team2});
+  LiveRoomPage({required this.team1, required this.team2, required this.gameId});
 
   @override
   _LiveRoomPageState createState() => _LiveRoomPageState();
@@ -133,7 +134,10 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   final response = await http.post(
     url,
     headers: {"Content-Type": "application/json"},
-    body: jsonEncode({"message": messageText}),
+    body: jsonEncode({
+      "gameId": gameId,
+      "message": messageText
+    }),
   );
 
   if (response.statusCode == 200) {
@@ -357,7 +361,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                 setState(() {
                                   messages.insert(0, newMessage);
                                 });
-                                await sendMessage('GAME_ID', messageText);
+                                await sendMessage(widget.gameId, messageText);
                                 _controller.clear();
                               }
                             }

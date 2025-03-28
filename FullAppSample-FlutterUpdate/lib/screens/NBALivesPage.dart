@@ -16,11 +16,11 @@ class NBALivesPage extends StatefulWidget {
 
 class _NBALivesPageState extends State<NBALivesPage> {
   List<Rooms> rooms = [
-    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
-    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
-    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
-    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right),
-    
+    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
+    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "2"),
+    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "3"),
+    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "4"),
+
   ];
 
   @override
@@ -139,6 +139,7 @@ class _NBALivesPageState extends State<NBALivesPage> {
                       state: rooms[index].state,
                       icon: rooms[index].icon,
                       isLive: true,
+                      gameId: rooms[index].gameId,
                     );
                   },
                   childCount: rooms.length,

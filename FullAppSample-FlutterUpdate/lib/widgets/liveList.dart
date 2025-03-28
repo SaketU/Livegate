@@ -18,7 +18,8 @@ class LiveList extends StatefulWidget{
   IconData icon;
 
   bool isLive;
-  LiveList({required this.league,required this.team1,required this.team2, required this.logo1,required this.logo2,required this.sport,required this.people,required this.remain,required this.state,required this.icon, required this.isLive});
+  String gameId;
+  LiveList({required this.league,required this.team1,required this.team2, required this.logo1,required this.logo2,required this.sport,required this.people,required this.remain,required this.state,required this.icon, required this.isLive, required this.gameId});
   @override
   _LiveListState createState() => _LiveListState();
 }
@@ -31,7 +32,7 @@ class _LiveListState extends State<LiveList> {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return LiveRoomPage(team1: widget.team1, team2: widget.team2);
+          return LiveRoomPage(team1: widget.team1, team2: widget.team2, gameId: widget.gameId);
         }));
       },
       child: Padding(

@@ -1,32 +1,50 @@
 [
     {
-        "team1": "Nets",
-        "team2": "Pacers",
+        "team1": "Mavericks",
+        "team2": "Magic",
         "team1_logo": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
         "team2_logo": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg"
     },
     {
-        "team1": "Warriors",
-        "team2": "Hawks",
+        "team1": "Spurs",
+        "team2": "Cavaliers",
         "team1_logo": "https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg",
         "team2_logo": "https://cdn.nba.com/logos/nba/1610612755/primary/L/logo.svg"
     },
     {
-        "team1": "Wizards",
-        "team2": "Knicks",
+        "team1": "Pacers",
+        "team2": "Wizards",
         "team1_logo": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
         "team2_logo": "https://cdn.nba.com/logos/nba/1610612741/primary/L/logo.svg"
     },
     {
-        "team1": "Bucks",
-        "team2": "Kings",
+        "team1": "Hawks",
+        "team2": "Heat",
         "team1_logo": "https://cdn.nba.com/logos/nba/1610612739/primary/L/logo.svg",
         "team2_logo": "https://cdn.nba.com/logos/nba/1610612765/primary/L/logo.svg"
     },
     {
-        "team1": "Bulls",
-        "team2": "Lakers",
+        "team1": "Grizzlies",
+        "team2": "Thunder",
         "team1_logo": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
         "team2_logo": "https://cdn.nba.com/logos/nba/1610612749/primary/L/logo.svg"
+    },
+    {
+        "team1": "Lakers",
+        "team2": "Bulls",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612737/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612766/primary/L/logo.svg"
+    },
+    {
+        "team1": "Rockets",
+        "team2": "Jazz",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612748/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg"
+    },
+    {
+        "team1": "Trail Blazers",
+        "team2": "Kings",
+        "team1_logo": "https://cdn.nba.com/logos/nba/1610612764/primary/L/logo.svg",
+        "team2_logo": "https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg"
     }
 ]

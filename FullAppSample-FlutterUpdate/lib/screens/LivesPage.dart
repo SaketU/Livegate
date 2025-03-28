@@ -263,6 +263,7 @@ class _LivesPageState extends State<LivesPage> {
                           state: room.state,
                           icon: room.icon,
                           isLive: room.state.toLowerCase() == 'live now',
+                          gameId: room.gameId,
                         );
                       }).toList(),
                     );

@@ -20,7 +20,7 @@ class UpcomingPage extends StatefulWidget {
 
 class _UpcomingPageState extends State<UpcomingPage> {
   List<Rooms> rooms = [
-    Rooms(League: "NFL", Team1: "Ravens", Team2: "Bengals", Logo1: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Logo2: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Sport: '', People :'', Remain: "", state: "Today 7:15pm", icon: CupertinoIcons.dot_radiowaves_left_right),
+    Rooms(League: "NFL", Team1: "Ravens", Team2: "Bengals", Logo1: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Logo2: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Sport: '', People :'', Remain: "", state: "Today 7:15pm", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
   ];
 
 @override
@@ -207,6 +207,7 @@ class _UpcomingPageState extends State<UpcomingPage> {
                       state: rooms[index].state,
                       icon: rooms[index].icon,
                       isLive: (index == false || index == false) ? true : false,
+                      gameId: rooms[index].gameId,
                     );
                   },
                   childCount: rooms.length,

@@ -239,11 +239,10 @@ app.post('/set-leagues', authenticateToken, async (req, res) => {
 
 app.post('/nba-message', async (req, res) => {
   try {
-    const gameId = req.params.id;
-    const { message } = req.body;
+    const { gameId, message } = req.body;
 
     //update the document by pushing the new message to the chat array.
-    const updatedGame = await NBAgame.findByIdAndUpdate(
+    const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
       gameId,
       { $push: { chat: message } },
       { new: true } //return the updated document.
@@ -274,6 +273,7 @@ app.get('/api/nba-games', async (req, res) => {
       venue: game.venue || "TBD",
       status: game.status || "Scheduled"
     }));
+    console.log("gameId:", formattedGames[0].id);
     res.json(formattedGames);
   } catch (error) {
     console.error("Error retrieving NBA games:", error);

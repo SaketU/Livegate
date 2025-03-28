@@ -27,8 +27,9 @@ for game in games:
         "home_team_logo": game["team1_logo"],
         "away_team_logo": game["team2_logo"],
         # "game_time": datetime.utcnow(), 
-        "venue": "TBD", 
-        "status": "Scheduled"
+        "venue": "TBD",
+        "status": "Scheduled",
+        "chat": []
     }
     collection.update_one(
         {"home_team": game["team1"], "away_team": game["team2"]},

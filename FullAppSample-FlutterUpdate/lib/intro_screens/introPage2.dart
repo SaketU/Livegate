@@ -26,7 +26,8 @@ class IntroPage2 extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   image: DecorationImage(
-                    image: AssetImage("assets/app_logos/page2.png"),
+                    image: AssetImage(Theme.of(context).brightness == Brightness.dark?
+                      "assets/app_logos/page2_dark.png":"assets/app_logos/page2.png"),
                     fit: BoxFit.cover,
                   ),
                 ),

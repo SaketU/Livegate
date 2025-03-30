@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fullapp/intro_screens/onboardingPage.dart';
+import 'package:fullapp/widgets/livePages.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fullapp/models/square_tile.dart';
 import 'package:http/http.dart' as http;
@@ -50,17 +51,25 @@ class _LoginPageState extends State<LoginPage> {
     String token = responseBody['accessToken'];
     await storage.write(key: 'accessToken', value: token);
 
-
+    /*
     ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')),
+    SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')), //comment this line
     );
+    */
 
 
     // Navigate to home page after successful login
+    Future.delayed(Duration(milliseconds: 100), () {
+    Navigator.of(context).pushReplacement(_fadeRoute(LivePages()));
+    });
+    //old page router
+    /*
     Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => OnBoardingPage()),
+    MaterialPageRoute(builder: (context) => LivePages()),
     );
+    */
+
     } else {
     ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(responseBody['message'] ?? 'Login Failed')),
@@ -276,6 +285,18 @@ class _LoginPageState extends State<LoginPage> {
     ),
   );
 }
+}
+PageRouteBuilder _fadeRoute(Widget page) {
+  return PageRouteBuilder(
+    transitionDuration: Duration(milliseconds: 800),
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+  );
 }
 
 

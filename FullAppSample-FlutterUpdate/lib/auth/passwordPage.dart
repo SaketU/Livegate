@@ -318,7 +318,9 @@ bool passwordConfirmed() {
                     },
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.blue
+                    : Colors.black,
                       padding: EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

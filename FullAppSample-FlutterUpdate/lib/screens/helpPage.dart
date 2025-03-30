@@ -19,7 +19,7 @@ class _HelpPageState extends State<HelpPage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Help Center',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.0248),),
+        title: Text('Help Center',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.021),),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
@@ -32,7 +32,7 @@ class _HelpPageState extends State<HelpPage> {
         ),
       ),
       body: Padding(
-    padding: EdgeInsets.symmetric(horizontal: 21.0, vertical: 20),
+    padding: EdgeInsets.symmetric(horizontal: 21.0),
     child: SingleChildScrollView(
       child: RichText(
         text: TextSpan(

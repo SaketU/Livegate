@@ -16,10 +16,10 @@ class NBALivesPage extends StatefulWidget {
 
 class _NBALivesPageState extends State<NBALivesPage> {
   List<Rooms> rooms = [
-    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
-    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "2"),
-    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "3"),
-    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "1 hr left", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "4"),
+    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
+    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "2"),
+    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "3"),
+    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "4"),
 
   ];
 
@@ -56,7 +56,7 @@ class _NBALivesPageState extends State<NBALivesPage> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 20),
+                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -80,6 +80,7 @@ class _NBALivesPageState extends State<NBALivesPage> {
                     ),
                   ),
                 ),
+                /*
                 Padding(
                   padding: const EdgeInsets.only(right: 31.0),
                   child: GestureDetector(
@@ -97,24 +98,6 @@ class _NBALivesPageState extends State<NBALivesPage> {
                         BlendMode.srcIn,  // Ensures proper color blending
                         ),
                       ),
-                  ),
-                ),
-                /*
-                IconButton(
-                  padding: EdgeInsets.only(right: 31),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
-                    }));
-                  },
-                  icon: Transform(
-                    transform: Matrix4.identity()..scale(1, 1.15),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      size: 24,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
                   ),
                 ),
                 */

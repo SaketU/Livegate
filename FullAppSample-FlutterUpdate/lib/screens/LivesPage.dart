@@ -121,7 +121,7 @@ class _LivesPageState extends State<LivesPage> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 20),
+                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -145,6 +145,7 @@ class _LivesPageState extends State<LivesPage> {
                     ),
                   ),
                 ),
+                /*
                 Padding(
                   padding: const EdgeInsets.only(right: 31.0),
                   child: GestureDetector(
@@ -162,24 +163,6 @@ class _LivesPageState extends State<LivesPage> {
                         BlendMode.srcIn,  // Ensures proper color blending
                         ),
                       ),
-                  ),
-                ),
-                /*
-                IconButton(
-                  padding: EdgeInsets.only(right: 31),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return ChatsPage();
-                    }));
-                  },
-                  icon: Transform(
-                    transform: Matrix4.identity()..scale(1, 1.15),
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      size: 24,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
                   ),
                 ),
                 */

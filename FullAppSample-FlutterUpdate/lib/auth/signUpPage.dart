@@ -9,6 +9,7 @@ import 'package:fullapp/auth/verificationCodePage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fullapp/auth/authPage.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 
 class SignUpPage extends StatefulWidget{
@@ -111,13 +112,17 @@ class _SignUpPageState extends State<SignUpPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
 
-                SizedBox(height: screenHeight * 0.17),
-                Text(
-                  'Livegate',
-                  style: GoogleFonts.interTight(fontSize: 55, fontWeight: FontWeight.bold),
-                  // dmSerifText, playfairDisplay, openSans, interTight, roboto
-                ),
-                SizedBox(height: screenHeight * 0.034),
+                SizedBox(height: screenHeight * 0.17),//149
+            SvgPicture.asset(
+              Theme.of(context).brightness == Brightness.dark?
+              'assets/app_logos/LIVEGATE_dark.svg': 'assets/app_logos/LIVEGATE_light.svg',
+              height: screenHeight * 0.062,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.tertiary,
+                BlendMode.srcIn,
+              ),
+            ),
+            SizedBox(height: screenHeight * 0.054),
 
 
                 //Full Name
@@ -179,7 +184,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: ElevatedButton(
                     onPressed: signUp,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.blue
+                    : Colors.black,
                       padding: EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -229,9 +236,9 @@ class _SignUpPageState extends State<SignUpPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SquareTile(imagePath: 'lib/Images App/Google-Logo.png'),
+                SquareTile(imagePath: 'assets/google.png'),
                 SizedBox(width: 10),
-                SquareTile(imagePath: 'lib/Images App/Apple-Logo.png'),
+                SquareTile(imagePath: 'assets/apple.png'),
               ],
             ),
 

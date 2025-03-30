@@ -95,11 +95,11 @@ flutter:
     - assets/chat-icon.svg
     - assets/live-icon.svg
     - assets/add_account.svg
-    - assets/apple.svg
+    - assets/apple.png
     - assets/display_mode.svg
     - assets/edit.svg
     - assets/facetime.svg
-    - assets/google.svg
+    - assets/google.png
     - assets/help.svg
     - assets/info.svg
     - assets/leave.svg
@@ -118,10 +118,9 @@ flutter:
     - assets/upload.svg
     - assets/logos/
     - assets/lightMode.svg
-
     - assets/darkMode.svg
-
     - assets/sports/
+    - assets/app_logos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

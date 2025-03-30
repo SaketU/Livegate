@@ -105,14 +105,7 @@ class _LiveListState extends State<LiveList> {
                                   Colors.red,  // Change to any color you need
                                   BlendMode.srcIn,  // Ensures proper color blending
                                   ),
-                  ),
-                                /*
-                                Icon(
-                                  widget.icon,
-                                  color: Colors.red,
-                                  size: screenHeight * 0.016,
-                                ),
-                                */
+                                  ),
                                 SizedBox(width: 8),
                               ],
                               Text(
@@ -135,7 +128,7 @@ class _LiveListState extends State<LiveList> {
                               )
                                   : Icon(
                                 CupertinoIcons.bell,
-                                color: Colors.grey.shade700,
+                                color: Theme.of(context).colorScheme.onTertiary,
                                 size: screenHeight * 0.016,
                               ),
                               SizedBox(width: 28),

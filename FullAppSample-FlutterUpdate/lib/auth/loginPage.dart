@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -82,6 +83,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
   return Scaffold(
     backgroundColor: Theme.of(context).colorScheme.surface,
     body: SafeArea(
@@ -94,13 +96,16 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             // Name of app
             SizedBox(height: screenHeight * 0.17),//149
-            Text(
-              'Livegate',
-              style: GoogleFonts.interTight(
-                fontSize: 55, fontWeight: FontWeight.bold //62
+            SvgPicture.asset(
+              Theme.of(context).brightness == Brightness.dark?
+              'assets/app_logos/LIVEGATE_dark.svg': 'assets/app_logos/LIVEGATE_light.svg',
+              height: screenHeight * 0.062,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.tertiary,
+                BlendMode.srcIn,
               ),
             ),
-            SizedBox(height: screenHeight * 0.034),
+            SizedBox(height: screenHeight * 0.054),
 
             // Username textfield
             Container(
@@ -179,7 +184,9 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: logIn,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.blue
+                    : Colors.black,
                   padding: EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -228,9 +235,9 @@ class _LoginPageState extends State<LoginPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SquareTile(imagePath: 'lib/Images App/Google-Logo.png'),
+                SquareTile(imagePath: 'assets/google.png'),
                 SizedBox(width: 10),
-                SquareTile(imagePath: 'lib/Images App/Apple-Logo.png'),
+                SquareTile(imagePath: 'assets/apple.png'),
               ],
             ),
 

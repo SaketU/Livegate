@@ -220,12 +220,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                       ],
                     ),
               ),
-              Text(
-                '1 hr',
-                style: GoogleFonts.interTight(
-                    fontSize: screenHeight*0.015,
-                    color: Theme.of(context).colorScheme.onTertiary),
-              ),
               Spacer(),
               
               Padding(padding: EdgeInsets.only(right: 18),
@@ -445,14 +439,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                       maxWidth: MediaQuery.of(context).size.width * 0.8,
                     ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(16),
                       color: (messages[index].messageType == "receiver" //Color of the text containers
                           ? Theme.of(context).colorScheme.primary //other users texts
                           : Theme.of(context).brightness == Brightness.dark? //your texts
-                          Colors.grey[800]: Theme.of(context).colorScheme.secondary),//dark mode : light mode
+                          Colors.blue: Theme.of(context).colorScheme.secondary),//dark mode : light mode
                     ),
                     padding:
-                        EdgeInsets.symmetric(vertical: 10, horizontal: 17),
+                        EdgeInsets.symmetric(vertical: screenHeight*0.0095, horizontal: 17),
                     child: Text(
                       messages[index].messageContent,
                       style: GoogleFonts.interTight(

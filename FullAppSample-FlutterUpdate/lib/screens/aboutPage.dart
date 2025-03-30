@@ -27,11 +27,12 @@ class _AboutPageState extends State<AboutPage> {
             Navigator.pop(context);
           },
           icon: Icon(CupertinoIcons.back, size: 30, color: Theme.of(context).colorScheme.tertiary,),
+          padding: EdgeInsets.only(right: 7, bottom: 7), 
           constraints: BoxConstraints(), // Removes size constraints
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 21.0, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 21.0),
         child: SingleChildScrollView(
           child: RichText(
             text: TextSpan(

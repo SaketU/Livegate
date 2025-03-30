@@ -19,14 +19,14 @@ class IntroPage1 extends StatelessWidget {
             /// ✅ IMAGE CONTAINER (Centers Image Without Affecting Column Alignment)
             Positioned(
               top: screenHeight * 0.015,
-              left: (screenWidth - (screenWidth * 0.82)) / 2,
+              left: (screenWidth - (screenWidth * 0.92)) / 2,
               child: Container(
-                width: screenWidth * 0.82,
+                width: screenWidth * 0.92,
                 height: screenHeight * 0.5053,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   image: DecorationImage(
-                    image: AssetImage("lib/Images App/live-page.png"),
+                    image: AssetImage("assets/app_logos/page1.png"),
                     fit: BoxFit.cover,
                   ),
                 ),

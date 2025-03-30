@@ -93,7 +93,7 @@ class _MoreOptionsState extends State<MoreOptions> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 20),
+                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
                   child: GestureDetector(
                     onTap: () {
 
@@ -109,6 +109,7 @@ class _MoreOptionsState extends State<MoreOptions> {
                     ),
                   ),
                 ),
+                /*
                 Padding(
                   padding: const EdgeInsets.only(right: 31.0),
                   child: GestureDetector(
@@ -128,6 +129,8 @@ class _MoreOptionsState extends State<MoreOptions> {
                       ),
                   ),
                 ),
+                */
+
               ],
         
               // Add the row as part of the AppBar's bottom

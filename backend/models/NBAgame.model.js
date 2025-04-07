@@ -6,7 +6,11 @@ const NBAgameSchema = new Schema({
   away_team: { type: String, required: true },
   home_team_logo: { type: String, required: true },
   away_team_logo: { type: String, required: true },
-  chat: [{ type: String }], // an array of message strings
+  chat: [{
+    sender: { type: String, required: true },
+    message: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
   venue: { type: String, required: true },
   status: { type: String, required: true }
 });

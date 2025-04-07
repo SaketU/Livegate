@@ -39,7 +39,6 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
    Future signUp() async {
-    // Update the endpoint URL to use /set-email instead of /create-account
     final url = Uri.parse('http://localhost:8000/set-email');
 
     try {

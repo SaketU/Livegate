@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  socket_io_client: ^2.0.0
 
   device_preview: ^1.2.0
 

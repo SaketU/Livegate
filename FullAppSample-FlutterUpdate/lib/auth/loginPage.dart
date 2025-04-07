@@ -7,14 +7,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:fullapp/models/square_tile.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fullapp/services/socket_manager.dart';
+
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
-
-//code
 class LoginPage extends StatefulWidget {
   final VoidCallback showSignUpPage;
 
@@ -31,57 +31,43 @@ class _LoginPageState extends State<LoginPage> {
   Future logIn() async {
     final url = Uri.parse('http://localhost:8000/login');
 
-
     try {
-    final response = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-    'email': _emailController.text.trim(),
-    'password': _passwordController.text.trim(),
-    }),
-    );
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text.trim(),
+        }),
+      );
 
+      final responseBody = jsonDecode(response.body);
 
-    final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        String token = responseBody['accessToken'];
+        await storage.write(key: 'accessToken', value: token);
 
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', responseBody['user']['username']);
 
-    if (response.statusCode == 200) {
+        // Initialize the socket here if needed.
+        // For example, using a default or placeholder game id:
+        SocketManager().initialize('defaultGameId');
 
-    String token = responseBody['accessToken'];
-    await storage.write(key: 'accessToken', value: token);
-
-    /*
-    ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(responseBody['message'] ?? 'Login Successful')), //comment this line
-    );
-    */
-
-
-    // Navigate to home page after successful login
-    Future.delayed(Duration(milliseconds: 100), () {
-    Navigator.of(context).pushReplacement(_fadeRoute(LivePages()));
-    });
-    //old page router
-    /*
-    Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => LivePages()),
-    );
-    */
-
-    } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(responseBody['message'] ?? 'Login Failed')),
-    );
-    }
+        Future.delayed(Duration(milliseconds: 100), () {
+          Navigator.of(context).pushReplacement(_fadeRoute(LivePages()));
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseBody['message'] ?? 'Login Failed')),
+        );
+      }
     } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('Error: $e')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
-
 
   @override
   void dispose() {
@@ -93,199 +79,195 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-  return Scaffold(
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    body: SafeArea(
-      top: true,
-      bottom: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Name of app
-            SizedBox(height: screenHeight * 0.17),//149
-            SvgPicture.asset(
-              Theme.of(context).brightness == Brightness.dark?
-              'assets/app_logos/LIVEGATE_dark.svg': 'assets/app_logos/LIVEGATE_light.svg',
-              height: screenHeight * 0.062,
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.tertiary,
-                BlendMode.srcIn,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.054),
-
-            // Username textfield
-            Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark?
-                Colors.white10 : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TextField(
-                  controller: _emailController,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  decoration: InputDecoration(
-                    //icon: Icon(CupertinoIcons.person_fill,  color: Colors.grey),
-                    border: InputBorder.none,
-                    hintText: 'Username or email',
-                    hintStyle: GoogleFonts.interTight(fontSize: 15, color: Colors.grey),
-                  ),
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        top: true,
+        bottom: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Name of app
+              SizedBox(height: screenHeight * 0.17),
+              SvgPicture.asset(
+                Theme.of(context).brightness == Brightness.dark
+                    ? 'assets/app_logos/LIVEGATE_dark.svg'
+                    : 'assets/app_logos/LIVEGATE_light.svg',
+                height: screenHeight * 0.062,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.tertiary,
+                  BlendMode.srcIn,
                 ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.012),
-            
-            // Password textfield
-            Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark?
-                Colors.white10 : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TextField(
-                  obscureText: true,
-                  controller: _passwordController,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  decoration: InputDecoration(
-                    //icon: Icon(CupertinoIcons.lock_fill,  color: Colors.grey),
-                    border: InputBorder.none,
-                    hintText: 'Password',
-                    hintStyle: GoogleFonts.interTight(fontSize: 15, color: Colors.grey),
-                  ),
+              SizedBox(height: screenHeight * 0.054),
+              // Username textfield
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white10
+                      : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.015),
-                        
-            // Forgot password button aligned to the container
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {},
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: Text(
-                      'Forgot password?',
-                      style: GoogleFonts.interTight(
-                        color: Colors.grey.shade500, 
-                        fontSize: 15
-                      ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    controller: _emailController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Username or email',
+                      hintStyle: GoogleFonts.interTight(
+                          fontSize: 15, color: Colors.grey),
                     ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.035),
-                        
-            // Login button
-            Container(
-              height: 48,
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: logIn,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue
-                    : Colors.black,
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              ),
+              SizedBox(height: screenHeight * 0.012),
+              // Password textfield
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white10
+                      : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  'Log In',
-                  style: GoogleFonts.interTight(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    obscureText: true,
+                    controller: _passwordController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Password',
+                      hintStyle: GoogleFonts.interTight(
+                          fontSize: 15, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.05),
-
-            // "Or continue with" divider
-            Row(
-              children: [
-                Expanded(
-                  child: Divider(
-                    thickness: 0.5,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    'Or continue with',
-                    style: GoogleFonts.interTight(color: Colors.grey.shade600),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(
-                    thickness: 0.5,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-              ],
-            ),
-            
-            SizedBox(height: screenHeight * 0.05),
-
-            // Apple and Google Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SquareTile(imagePath: 'assets/google.png'),
-                SizedBox(width: 10),
-                SquareTile(imagePath: 'assets/apple.png'),
-              ],
-            ),
-
-            Spacer(), // Pushes the sign-up row to the bottom
-
-            // Sign-up option with text wrapping
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Don't have an account?",
-                      style: GoogleFonts.interTight(color: Colors.grey, fontSize: 14),
-                    ),
-                    GestureDetector(
-                      onTap: widget.showSignUpPage,
+              SizedBox(height: screenHeight * 0.015),
+              // Forgot password button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () {},
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 5),
                       child: Text(
-                        ' Sign Up',
+                        'Forgot password?',
                         style: GoogleFonts.interTight(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14
+                          color: Colors.grey.shade500,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.035),
+              // Login button
+              Container(
+                height: 48,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: logIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.blue
+                        : Colors.black,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Log In',
+                    style: GoogleFonts.interTight(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              SizedBox(height: screenHeight * 0.05),
+              // "Or continue with" divider
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      thickness: 0.5,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      'Or continue with',
+                      style: GoogleFonts.interTight(
+                          color: Colors.grey.shade600),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      thickness: 0.5,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.05),
+              // Apple and Google Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SquareTile(imagePath: 'assets/google.png'),
+                  SizedBox(width: 10),
+                  SquareTile(imagePath: 'assets/apple.png'),
+                ],
+              ),
+              Spacer(), // Pushes the sign-up row to the bottom
+              // Sign-up option
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account?",
+                        style: GoogleFonts.interTight(
+                            color: Colors.grey, fontSize: 14),
+                      ),
+                      GestureDetector(
+                        onTap: widget.showSignUpPage,
+                        child: Text(
+                          ' Sign Up',
+                          style: GoogleFonts.interTight(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
-}
+
 PageRouteBuilder _fadeRoute(Widget page) {
   return PageRouteBuilder(
     transitionDuration: Duration(milliseconds: 800),
@@ -298,6 +280,7 @@ PageRouteBuilder _fadeRoute(Widget page) {
     },
   );
 }
+
 
 
 

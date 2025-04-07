@@ -14,13 +14,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/widgets/friendsBottomSheet.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
 
 class LiveRoomPage extends StatefulWidget {
   final String team1;
   final String team2;
   final String gameId;
 
-  LiveRoomPage({required this.team1, required this.team2, required this.gameId});
+  LiveRoomPage({
+    required this.team1,
+    required this.team2,
+    required this.gameId,
+  });
 
   @override
   _LiveRoomPageState createState() => _LiveRoomPageState();
@@ -29,140 +35,92 @@ class LiveRoomPage extends StatefulWidget {
 class _LiveRoomPageState extends State<LiveRoomPage> {
   TextEditingController _controller = TextEditingController();
   bool _isTyping = false;
-  bool saved = false;
+  String currentUser = '@Unknown';
+  List<RoomMessage> messages = [];
 
-  List<RoomMessage> messages = [
-    RoomMessage(name: '@Letsgo',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Good play",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@James_L',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Nice",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@LV',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Yeah, that play was a beauty",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@King_M',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "They just need to keep it up on defense",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@JonasTk',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Agree",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@Johnny25',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Come on, let's goooo",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@LewisB',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Ufff",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@John_DJ',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Ohhh that was good",
-        messageType: "sender",
-        selected: true),
-    RoomMessage(name: '@Max_10',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Nice shot",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@Letsgo',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Good play",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@James_L',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Nice",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@LV',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Yeah, that play was a beauty",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@King_M',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "They just need to keep it up on defense",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@JonasTk',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Agree",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@Johnny25',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Come on, let's goooo",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(name: '@LewisB',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Ufff",
-        messageType: "receiver",
-        selected: true),
-    RoomMessage(
-        name: '@John_DJ',
-        profileImage:
-            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Ohhh that was good",
-        messageType: "sender",
-        selected: true),
-    RoomMessage(
-        name: '@Max_10',
-        profileImage:
-            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: "Nice shot",
-        messageType: "receiver",
-        selected: true),
-  ];
-
-  Future<void> sendMessage(String gameId, String messageText) async {
-  final url = Uri.parse('http://localhost:8000/nba-message');
-
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode({
-      "gameId": gameId,
-      "message": messageText
-    }),
-  );
-
-  if (response.statusCode == 200) {
-
-    print("Message sent successfully");
-  } else {
-
-    print("Error sending message: ${response.body}");
+  Future<void> _loadCurrentUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentUser = prefs.getString('username') ?? '@Unknown';
+    });
   }
-}
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(() {
+  Future<void> loadChatMessages() async {
+    final url = Uri.parse('http://localhost:8000/nba-chat/${widget.gameId}');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List<dynamic> chatArray = data['chat'];
       setState(() {
-        _isTyping = _controller.text.isNotEmpty;
+        messages = chatArray.map((chatEntry) {
+          return RoomMessage(
+            name: chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
+                ? '@${chatEntry['sender']}'
+                : '@Unknown',
+            profileImage:
+                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+            messageContent: chatEntry['message'] ?? '',
+            messageType: 'receiver',
+            selected: true,
+          );
+        }).toList().reversed.toList();;
+      });
+    } else {
+      print('Error fetching chat messages: ${response.body}');
+    }
+  }
+
+  void subscribeToSocketEvents() {
+    // Listen to new message events using the socket from SocketManager.
+    SocketManager().socket.on('new message', (data) {
+      print('New message received: $data');
+      setState(() {
+        messages.insert(
+            0,
+            RoomMessage(
+              name: data['sender'] != null && data['sender'].toString().isNotEmpty
+                  ? '@${data['sender']}'
+                  : 'OtherUser',
+              profileImage:
+                  'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: data['message'] ?? '',
+              messageType: 'receiver',
+              selected: true,
+            ));
       });
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+    _controller.addListener(() {
+      setState(() {
+        _isTyping = _controller.text.isNotEmpty;
+      });
+    });
+    loadChatMessages();
+    // Initialize the socket using the global SocketManager
+    SocketManager().initialize(widget.gameId);
+    // Subscribe to socket events (e.g., for receiving messages)
+    subscribeToSocketEvents();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
+    // Do not dispose the socket here, so that it persists until logout.
     super.dispose();
+  }
+
+  void emitMessage(String gameId, String messageText, String sender) {
+    SocketManager().socket.emit('send message', {
+      "gameId": gameId,
+      "message": messageText,
+      "sender": sender,
+    });
   }
 
   @override
@@ -192,16 +150,16 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               Padding(
                 padding: const EdgeInsets.only(left: 3, right: 5),
                 child: Row(
-                      children: [
-                        Text(
-                          widget.team1,
-                          style: GoogleFonts.interTight(
-                            fontSize: screenHeight * 0.018,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
-                        ),
-                        Text(
+                  children: [
+                    Text(
+                      widget.team1,
+                      style: GoogleFonts.interTight(
+                        fontSize: screenHeight * 0.018,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ),
+                    Text(
                       ' vs ',
                       style: GoogleFonts.interTight(
                         fontSize: screenHeight * 0.018,
@@ -209,7 +167,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
-                        Text(
+                    Text(
                       widget.team2,
                       style: GoogleFonts.interTight(
                         fontSize: screenHeight * 0.018,
@@ -217,18 +175,17 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
-                      ],
-                    ),
+                  ],
+                ),
               ),
               Spacer(),
-              
-              Padding(padding: EdgeInsets.only(right: 18),
-              child: GestureDetector(
-                child: 
-                  SvgPicture.asset(
+              Padding(
+                padding: EdgeInsets.only(right: 18),
+                child: GestureDetector(
+                  child: SvgPicture.asset(
                     'assets/report.svg',
                     colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.tertiary,  
+                      Theme.of(context).colorScheme.tertiary,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -238,28 +195,26 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                 padding: const EdgeInsets.only(right: 18),
                 child: GestureDetector(
                   onTap: () {
-                          showModalBottomSheet(
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            context: context,
-                            builder: (context) => FriendsBottomSheet(),
-                          );
-                        },
-                  child: 
-                    SvgPicture.asset(
-                      'assets/share.svg',
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.tertiary, 
-                        BlendMode.srcIn,
-                      ),
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      context: context,
+                      builder: (context) => FriendsBottomSheet(),
+                    );
+                  },
+                  child: SvgPicture.asset(
+                    'assets/share.svg',
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.tertiary,
+                      BlendMode.srcIn,
                     ),
                   ),
+                ),
               ),
             ],
           ),
         ),
       ),
-
       body: Column(
         children: [
           // Chat messages (Scrollable List)
@@ -268,7 +223,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               itemCount: messages.length,
               reverse: true, // Scroll from bottom to top
               physics: BouncingScrollPhysics(),
-              padding: EdgeInsets.zero, // Ensure no extra padding
+              padding: EdgeInsets.zero,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemBuilder: (context, index) {
                 var message = messages[index];
@@ -276,7 +231,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               },
             ),
           ),
-
           // Input Field Section
           Container(
             color: Theme.of(context).brightness == Brightness.dark
@@ -341,41 +295,47 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                       padding: const EdgeInsets.only(right: 18),
                       child: GestureDetector(
                         onTap: _isTyping
-                          ? () async {
-                              // Retrieve and trim the text from the TextField
-                              String messageText = _controller.text.trim();
-                              if (messageText.isNotEmpty) {
-                                RoomMessage newMessage = RoomMessage(
-                                  name: '@YourName',
-                                  profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-                                  messageContent: messageText,
-                                  messageType: "sender",
-                                  selected: true,
-                                );
-                                setState(() {
-                                  messages.insert(0, newMessage);
-                                });
-                                await sendMessage(widget.gameId, messageText);
-                                _controller.clear();
+                            ? () {
+                                String messageText = _controller.text.trim();
+                                if (messageText.isNotEmpty) {
+                                  // Update the UI with the sender message
+                                  setState(() {
+                                    messages.insert(
+                                      0,
+                                      RoomMessage(
+                                        name: currentUser,
+                                        profileImage:
+                                            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+                                        messageContent: messageText,
+                                        messageType: "sender",
+                                        selected: true,
+                                      ),
+                                    );
+                                  });
+                                  // Emit the message via the SocketManager
+                                  emitMessage(widget.gameId, messageText, currentUser);
+                                  _controller.clear();
+                                }
                               }
-                            }
-                          : null,
+                            : null,
                         child: Container(
                           height: screenHeight * 0.040,
                           width: screenHeight * 0.040,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _isTyping
-                                ? ( Colors.black) //color when typed
+                                ? Colors.black
                                 : Theme.of(context).brightness == Brightness.dark
-                                ?Colors.grey.shade800 : Colors.grey[350], //color when no typed dark : light
+                                    ? Colors.grey.shade800
+                                    : Colors.grey[350],
                           ),
                           child: Icon(
                             Icons.send,
                             color: _isTyping
-                                ? (Colors.white) //color when typed
+                                ? Colors.white
                                 : Theme.of(context).brightness == Brightness.dark
-                                    ?Colors.white60 : Colors.white70, //color when no typed dark : light
+                                    ? Colors.white60
+                                    : Colors.white70,
                             size: screenHeight * 0.020,
                           ),
                         ),
@@ -398,7 +358,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 7, horizontal: 15),
       child: Align(
-        alignment: (messages[index].messageType == "receiver"
+        alignment: (message.messageType == "receiver"
             ? Alignment.centerLeft
             : Alignment.centerRight),
         child: Row(
@@ -406,10 +366,10 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           children: [
             // Profile Image
             CircleAvatar(
-                    backgroundImage: NetworkImage(messages[index].profileImage),
-                    maxRadius: screenHeight*0.020,
-                  ),
-            SizedBox(width: screenWidth*0.008),
+              backgroundImage: NetworkImage(message.profileImage),
+              maxRadius: screenHeight * 0.020,
+            ),
+            SizedBox(width: screenWidth * 0.008),
             // Name and Message Content
             Expanded(
               child: Column(
@@ -421,12 +381,12 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) {
                         return UsersProfilePage();
-                      }));// Navigate to User Profile
+                      }));
                     },
                     child: Text(
-                      messages[index].name,
+                      message.name,
                       style: GoogleFonts.interTight(
-                        fontSize: screenHeight*0.018,
+                        fontSize: screenHeight * 0.018,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
@@ -440,20 +400,22 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      color: (messages[index].messageType == "receiver" //Color of the text containers
-                          ? Theme.of(context).colorScheme.primary //other users texts
-                          : Theme.of(context).brightness == Brightness.dark? //your texts
-                          Colors.blue: Theme.of(context).colorScheme.secondary),//dark mode : light mode
+                      color: (message.messageType == "receiver"
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).brightness == Brightness.dark
+                              ? Colors.blue
+                              : Theme.of(context).colorScheme.secondary),
                     ),
-                    padding:
-                        EdgeInsets.symmetric(vertical: screenHeight*0.0095, horizontal: 17),
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.0095, horizontal: 17,
+                    ),
                     child: Text(
-                      messages[index].messageContent,
+                      message.messageContent,
                       style: GoogleFonts.interTight(
-                        fontSize: screenHeight*0.018,
-                        color: messages[index].messageType == "receiver" //color of the letters 
-                            ? Theme.of(context).colorScheme.tertiary //other users texts
-                            : Theme.of(context).colorScheme.onSecondary, //your texts
+                        fontSize: screenHeight * 0.018,
+                        color: message.messageType == "receiver"
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Theme.of(context).colorScheme.onSecondary,
                       ),
                     ),
                   ),
@@ -466,6 +428,11 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     );
   }
 }
+
+
+
+
+
 
 
 

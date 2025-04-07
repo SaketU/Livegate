@@ -9,6 +9,8 @@ import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
+
 //code
 class ProfilePage extends StatefulWidget {
   @override
@@ -29,17 +31,19 @@ class _ProfilePageState extends State<ProfilePage> {
   ;
 
   void _signUserOut() {
-    FirebaseAuth.instance.signOut();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AuthPage(),
-        ));
-      }
-    });
-
-  }
+  // Disconnect the socket before logging out.
+  SocketManager().disconnect();
+  
+  FirebaseAuth.instance.signOut();
+  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    if (user == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AuthPage()),
+      );
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {

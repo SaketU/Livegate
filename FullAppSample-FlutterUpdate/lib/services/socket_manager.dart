@@ -20,10 +20,10 @@ class SocketManager {
       socket.emit('join game', gameId);
     });
 
-    socket.on('new message', (data) {
-      print('New message received: $data');
-      // Additional handling here
-    });
+    // socket.on('new message', (data) {
+    //   print('New message received: $data');
+    //   // Additional handling here
+    // });
 
     socket.onDisconnect((_) {
       print('Socket disconnected');

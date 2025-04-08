@@ -91,33 +91,27 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
   }
 
- @override
+@override
 void initState() {
   super.initState();
   _loadCurrentUser();
+
   _controller.addListener(() {
     setState(() {
       _isTyping = _controller.text.isNotEmpty;
     });
   });
+
   loadChatMessages();
 
-  SocketManager().initialize(widget.gameId);
-  SocketManager().socket.on('new message', (data) {
-    print('📩 New message: $data');
-    setState(() {
-      messages.insert(
-        0,
-        RoomMessage(
-          name: data['sender'] != null ? '@${data['sender']}' : '@Unknown',
-          profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-          messageContent: data['message'] ?? '',
-          messageType: 'receiver',
-          selected: true,
-        ),
-      );
-    });
-  });
+  if (SocketManager().socket.disconnected || !SocketManager().socket.connected) {
+    SocketManager().initialize(widget.gameId);
+  } else {
+    SocketManager().socket.emit('join game', widget.gameId);
+  }
+
+  // ✅ Always call after connect/init
+  subscribeToSocketEvents();
 }
 
 

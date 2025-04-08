@@ -11,34 +11,27 @@ class SocketManager {
   SocketManager._internal();
 
   void initialize(String gameId) {
-    if (socket != null && (socket.connected || !socket.disconnected)) {
-      print('Socket already initialized.');
-      return;
-    }
-
     socket = IO.io('http://localhost:8000', IO.OptionBuilder()
         .setTransports(['websocket'])
-        .enableReconnection()
         .build());
 
-    socket.connect();
-
-    socket.on('connect', (_) {
+    socket.onConnect((_) {
       print('Socket connected: ${socket.id}');
       socket.emit('join game', gameId);
     });
 
-    socket.on('disconnect', (_) {
-      print('Socket disconnected');
+    socket.on('new message', (data) {
+      print('New message received: $data');
+      // Additional handling here
     });
 
-    socket.on('connect_error', (err) {
-      print('Connection error: $err');
+    socket.onDisconnect((_) {
+      print('Socket disconnected');
     });
   }
 
   void disconnect() {
     socket.dispose();
-    print(' Socket disconnected via logout');
+    print('Socket disconnected via logout');
   }
 }

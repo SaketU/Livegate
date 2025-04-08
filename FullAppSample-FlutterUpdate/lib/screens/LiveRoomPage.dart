@@ -92,36 +92,42 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
  @override
-  void initState() {
-    super.initState();
-    _loadCurrentUser();
-    _controller.addListener(() {
-      setState(() {
-        _isTyping = _controller.text.isNotEmpty;
-      });
+void initState() {
+  super.initState();
+  _loadCurrentUser();
+  _controller.addListener(() {
+    setState(() {
+      _isTyping = _controller.text.isNotEmpty;
     });
-    loadChatMessages();
-    subscribeToSocketEvents();
+  });
+  loadChatMessages();
 
-    // Ensure the socket connects
-    if (SocketManager().socket.disconnected) {
-      SocketManager().socket.connect();
-    }
-
-    // Wait for connect before joining the room
-    SocketManager().socket.on('connect', (_) {
-      print("Socket connected! Joining game room: ${widget.gameId}");
-      SocketManager().socket.emit('join game', widget.gameId);
+  SocketManager().initialize(widget.gameId);
+  SocketManager().socket.on('new message', (data) {
+    print('📩 New message: $data');
+    setState(() {
+      messages.insert(
+        0,
+        RoomMessage(
+          name: data['sender'] != null ? '@${data['sender']}' : '@Unknown',
+          profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+          messageContent: data['message'] ?? '',
+          messageType: 'receiver',
+          selected: true,
+        ),
+      );
     });
-  }
+  });
+}
+
 
   @override
   void dispose() {
     _controller.dispose();
     SocketManager().socket.off('new message');
-    SocketManager().socket.off('connect');
     super.dispose();
   }
+
 
   void emitMessage(String gameId, String messageText, String sender) {
     SocketManager().socket.emit('send message', {

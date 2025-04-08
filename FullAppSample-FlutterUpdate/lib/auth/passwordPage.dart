@@ -8,6 +8,8 @@ import 'package:fullapp/auth/verificationCodePage.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fullapp/services/socket_manager.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -71,6 +73,11 @@ class _PasswordPageState extends State<PasswordPage> {
         // Save the JWT token securely.
         final String token = responseBody['accessToken'];
         await storage.write(key: 'accessToken', value: token);
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('username', responseBody['user']['username']);
+
+        SocketManager().initialize('defaultGameId');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

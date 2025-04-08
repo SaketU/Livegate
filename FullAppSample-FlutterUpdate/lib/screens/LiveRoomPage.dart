@@ -72,7 +72,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   void subscribeToSocketEvents() {
-    // Listen to new message events using the socket from SocketManager.
     SocketManager().socket.on('new message', (data) {
       print('New message received: $data');
       setState(() {
@@ -92,7 +91,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
   }
 
-  @override
+ @override
   void initState() {
     super.initState();
     _loadCurrentUser();
@@ -102,16 +101,25 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       });
     });
     loadChatMessages();
-    // Initialize the socket using the global SocketManager
-    SocketManager().initialize(widget.gameId);
-    // Subscribe to socket events (e.g., for receiving messages)
     subscribeToSocketEvents();
+
+    // Ensure the socket connects
+    if (SocketManager().socket.disconnected) {
+      SocketManager().socket.connect();
+    }
+
+    // Wait for connect before joining the room
+    SocketManager().socket.on('connect', (_) {
+      print("Socket connected! Joining game room: ${widget.gameId}");
+      SocketManager().socket.emit('join game', widget.gameId);
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    // Do not dispose the socket here, so that it persists until logout.
+    SocketManager().socket.off('new message');
+    SocketManager().socket.off('connect');
     super.dispose();
   }
 

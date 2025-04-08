@@ -264,7 +264,7 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
-      io.to(gameId).emit('new message', chatMessage);
+      socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
       console.error('Error processing message: ', err);
       socket.emit('error', { message: 'Server error' });

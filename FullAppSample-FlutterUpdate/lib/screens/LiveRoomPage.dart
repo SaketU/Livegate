@@ -107,11 +107,13 @@ void initState() {
   if (SocketManager().socket.disconnected || !SocketManager().socket.connected) {
     SocketManager().initialize(widget.gameId);
   } else {
+    print("✅ Socket connected. Joining game: ${widget.gameId}");
     SocketManager().socket.emit('join game', widget.gameId);
+    subscribeToSocketEvents();
   }
 
   // ✅ Always call after connect/init
-  subscribeToSocketEvents();
+  //subscribeToSocketEvents();
 }
 
 

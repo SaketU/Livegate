@@ -64,7 +64,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
             messageType: 'receiver',
             selected: true,
           );
-        }).toList().reversed.toList();;
+        }).toList().reversed.toList();
       });
     } else {
       print('Error fetching chat messages: ${response.body}');
@@ -76,46 +76,50 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       print('New message received: $data');
       setState(() {
         messages.insert(
-            0,
-            RoomMessage(
-              name: data['sender'] != null && data['sender'].toString().isNotEmpty
-                  ? '@${data['sender']}'
-                  : 'OtherUser',
-              profileImage:
-                  'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-              messageContent: data['message'] ?? '',
-              messageType: 'receiver',
-              selected: true,
-            ));
+          0,
+          RoomMessage(
+            name: data['sender'] != null && data['sender'].toString().isNotEmpty
+                ? '@${data['sender']}'
+                : 'OtherUser',
+            profileImage:
+                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+            messageContent: data['message'] ?? '',
+            messageType: 'receiver',
+            selected: true,
+          ),
+        );
       });
     });
   }
 
-@override
-void initState() {
-  super.initState();
-  _loadCurrentUser();
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
 
-  _controller.addListener(() {
-    setState(() {
-      _isTyping = _controller.text.isNotEmpty;
+    _controller.addListener(() {
+      setState(() {
+        _isTyping = _controller.text.isNotEmpty;
+      });
     });
-  });
 
-  loadChatMessages();
+    loadChatMessages();
 
-  if (SocketManager().socket.disconnected || !SocketManager().socket.connected) {
-    SocketManager().initialize(widget.gameId);
-  } else {
-    print("✅ Socket connected. Joining game: ${widget.gameId}");
-    SocketManager().socket.emit('join game', widget.gameId);
-    subscribeToSocketEvents();
+    // Check socket connection status
+    if (SocketManager().socket.disconnected || !SocketManager().socket.connected) {
+      // If the socket is not connected, initialize and listen for the connect event.
+      SocketManager().initialize(widget.gameId);
+      SocketManager().socket.on('connect', (_) {
+        print("✅ Socket connected after initialization. Joining game: ${widget.gameId}");
+        SocketManager().socket.emit('join game', widget.gameId);
+        subscribeToSocketEvents();
+      });
+    } else {
+      print("✅ Socket already connected. Joining game: ${widget.gameId}");
+      SocketManager().socket.emit('join game', widget.gameId);
+      subscribeToSocketEvents();
+    }
   }
-
-  // ✅ Always call after connect/init
-  //subscribeToSocketEvents();
-}
-
 
   @override
   void dispose() {
@@ -123,7 +127,6 @@ void initState() {
     SocketManager().socket.off('new message');
     super.dispose();
   }
-
 
   void emitMessage(String gameId, String messageText, String sender) {
     SocketManager().socket.emit('send message', {
@@ -417,7 +420,8 @@ void initState() {
                               : Theme.of(context).colorScheme.secondary),
                     ),
                     padding: EdgeInsets.symmetric(
-                      vertical: screenHeight * 0.0095, horizontal: 17,
+                      vertical: screenHeight * 0.0095,
+                      horizontal: 17,
                     ),
                     child: Text(
                       message.messageContent,
@@ -438,6 +442,7 @@ void initState() {
     );
   }
 }
+
 
 
 

@@ -247,6 +247,13 @@ io.on('connection', (socket) => {
   socket.on('join game', (gameId) => {
     socket.join(gameId);
     console.log(`Socket ${socket.id} joined game ${gameId}`);
+    
+    // Print all sockets currently in the room
+    io.in(gameId).allSockets().then((sockets) => {
+      console.log(`Sockets in room ${gameId}:`, Array.from(sockets));
+    }).catch((err) => {
+      console.error('Error retrieving sockets in room:', err);
+    });
   });
 
   // New event: leave game

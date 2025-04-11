@@ -92,6 +92,20 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
   }
 
+  void _joinGameRoom() {
+    if (SocketManager().socket.connected) {
+      SocketManager().joinGame(widget.gameId);
+      subscribeToSocketEvents();
+    } else {
+      // When the socket connects, join the game room.
+      SocketManager().socket.on('connect', (_) {
+        print("Socket connected after initialization. Joining game: ${widget.gameId}");
+        SocketManager().joinGame(widget.gameId);
+        subscribeToSocketEvents();
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -105,25 +119,15 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
     loadChatMessages();
 
-    // Check socket connection status
-    if (SocketManager().socket.disconnected || !SocketManager().socket.connected) {
-      // If the socket is not connected, initialize and listen for the connect event.
-      SocketManager().initialize(widget.gameId);
-      SocketManager().socket.on('connect', (_) {
-        print("✅ Socket connected after initialization. Joining game: ${widget.gameId}");
-        SocketManager().socket.emit('join game', widget.gameId);
-        subscribeToSocketEvents();
-      });
-    } else {
-      print("✅ Socket already connected. Joining game: ${widget.gameId}");
-      SocketManager().socket.emit('join game', widget.gameId);
-      subscribeToSocketEvents();
-    }
+    // Only join the game room when entering the chat page.
+    _joinGameRoom();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    // Leave the game room when exiting the LiveRoomPage.
+    SocketManager().leaveGame(widget.gameId);
     SocketManager().socket.off('new message');
     super.dispose();
   }
@@ -442,6 +446,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     );
   }
 }
+
 
 
 

@@ -12,7 +12,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart';
 
-
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
 class LoginPage extends StatefulWidget {
@@ -50,9 +49,8 @@ class _LoginPageState extends State<LoginPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('username', responseBody['user']['username']);
 
-        // Initialize the socket here if needed.
-        // For example, using a default or placeholder game id:
-        SocketManager().initialize('defaultGameId');
+        // Initialize the global socket connection without a game id.
+        SocketManager().initialize();
 
         Future.delayed(Duration(milliseconds: 100), () {
           Navigator.of(context).pushReplacement(_fadeRoute(LivePages()));
@@ -76,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -102,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.054),
-              // Username textfield
+              // Username text field
               Container(
                 height: 48,
                 decoration: BoxDecoration(
@@ -126,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.012),
-              // Password textfield
+              // Password text field
               Container(
                 height: 48,
                 decoration: BoxDecoration(
@@ -280,6 +279,7 @@ PageRouteBuilder _fadeRoute(Widget page) {
     },
   );
 }
+
 
 
 

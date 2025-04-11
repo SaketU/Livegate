@@ -13,8 +13,6 @@ import 'package:fullapp/services/socket_manager.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
-
-//added fullname and email as parameters
 class PasswordPage extends StatefulWidget {
   final String fullName;
   final String email;
@@ -28,9 +26,9 @@ class PasswordPage extends StatefulWidget {
   @override
   _PasswordPageState createState() => _PasswordPageState();
 }
-class _PasswordPageState extends State<PasswordPage> {
 
-  //text controller
+class _PasswordPageState extends State<PasswordPage> {
+  // Text controllers
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -77,7 +75,8 @@ class _PasswordPageState extends State<PasswordPage> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('username', responseBody['user']['username']);
 
-        SocketManager().initialize('defaultGameId');
+        // Initialize the global socket connection here without a game id.
+        SocketManager().initialize();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -104,10 +103,10 @@ class _PasswordPageState extends State<PasswordPage> {
     }
   }
 
-bool passwordConfirmed() {
-  return _passwordController.text.trim() ==
-         _confirmPasswordController.text.trim();
-}
+  bool passwordConfirmed() {
+    return _passwordController.text.trim() ==
+        _confirmPasswordController.text.trim();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,93 +168,91 @@ bool passwordConfirmed() {
                   'Use a strong password to secure your account',
                   textAlign: TextAlign.start,
                   style: GoogleFonts.interTight(
-                    color: Colors.grey,//shade600
+                    color: Colors.grey,
                     fontSize: 14,
                   ),
                 ),
               ),
-
               SizedBox(height: screenHeight * 0.045),
-
               Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark?
-                Colors.white10 : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TextField(
-                  controller: _usernameController,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  decoration: InputDecoration(
-                    //icon: Icon(CupertinoIcons.lock_fill,  color: Colors.grey),
-                    border: InputBorder.none,
-                    hintText: 'Create username',
-                    hintStyle: GoogleFonts.interTight(fontSize: 15, color: Colors.grey),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white10
+                      : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    controller: _usernameController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Create username',
+                      hintStyle: GoogleFonts.interTight(
+                          fontSize: 15, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
-            ),
-                SizedBox(height: screenHeight * 0.012),
-
-                Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark?
-                Colors.white10 : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TextField(
-                  obscureText: true,
-                  controller: _passwordController,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  decoration: InputDecoration(
-                    //icon: Icon(CupertinoIcons.lock_fill,  color: Colors.grey),
-                    border: InputBorder.none,
-                    hintText: 'Password',
-                    hintStyle: GoogleFonts.interTight(fontSize: 15, color: Colors.grey),
+              SizedBox(height: screenHeight * 0.012),
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white10
+                      : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    obscureText: true,
+                    controller: _passwordController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Password',
+                      hintStyle: GoogleFonts.interTight(
+                          fontSize: 15, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
-            ),
-                SizedBox(height: screenHeight * 0.012),
-
-                Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ?
-                Colors.white10 : Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: TextField(
-                  obscureText: true,
-                  controller: _confirmPasswordController,
-                  cursorColor: Theme.of(context).colorScheme.tertiary,
-                  decoration: InputDecoration(
-                    //icon: Icon(CupertinoIcons.lock_fill,  color: Colors.grey),
-                    border: InputBorder.none,
-                    hintText: 'Confirm password',
-                    hintStyle: GoogleFonts.interTight(fontSize: 15, color: Colors.grey),
+              SizedBox(height: screenHeight * 0.012),
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white10
+                      : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: TextField(
+                    obscureText: true,
+                    controller: _confirmPasswordController,
+                    cursorColor: Theme.of(context).colorScheme.tertiary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Confirm password',
+                      hintStyle: GoogleFonts.interTight(
+                          fontSize: 15, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
-            ),
-              Spacer(), 
-
+              Spacer(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center, // Centers the row content
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Align(
-                      alignment: Alignment.center, // Aligns the text in the middle
+                      alignment: Alignment.center,
                       child: RichText(
-                        textAlign: TextAlign.center, // Centers the text itself
+                        textAlign: TextAlign.center,
                         text: TextSpan(
                           children: [
                             TextSpan(
@@ -268,9 +265,9 @@ bool passwordConfirmed() {
                             TextSpan(
                               text: ' Terms of Service',
                               style: GoogleFonts.interTight(
-                                color: Theme.of(context).brightness == Brightness.dark 
-                                    ? Colors.grey.shade500 // Dark mode color
-                                    : Colors.grey.shade800, // Light mode color
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey.shade500
+                                    : Colors.grey.shade800,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -285,15 +282,16 @@ bool passwordConfirmed() {
                             TextSpan(
                               text: ' Privacy Policy',
                               style: GoogleFonts.interTight(
-                                color: Theme.of(context).brightness == Brightness.dark 
-                                    ? Colors.grey.shade500 // Dark mode color
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.grey.shade500
                                     : Colors.grey.shade800,
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             TextSpan(
-                              text: ' to learn how we collect, use, and share your data',
+                              text:
+                                  ' to learn how we collect, use, and share your data',
                               style: GoogleFonts.interTight(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -306,44 +304,43 @@ bool passwordConfirmed() {
                   ),
                 ],
               ),
-
-
-
-              SizedBox(height: screenHeight*0.040,),
-
+              SizedBox(height: screenHeight * 0.040),
               Container(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      bool success = await confirmPassword();
-                      if (success) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) {
-                          return LeaguePreferencePage();
-                        }));
-                      }
-                    },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue
-                    : Colors.black,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    bool success = await confirmPassword();
+                    if (success) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LeaguePreferencePage(),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.blue
+                            : Colors.black,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Continue',
-                      style: GoogleFonts.interTight(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
+                  ),
+                  child: Text(
+                    'Continue',
+                    style: GoogleFonts.interTight(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
                     ),
                   ),
                 ),
-            ]
+              ),
+            ],
           ),
         ),
       ),

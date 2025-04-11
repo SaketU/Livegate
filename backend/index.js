@@ -140,7 +140,6 @@ app.post('/login', async (req, res) => {
   });
 });
 
-
 app.get('/get-user', authenticateToken, async (req, res) => {
   const { userId } = req.user;
 
@@ -184,16 +183,18 @@ app.post('/set-leagues', authenticateToken, async (req, res) => {
 app.post('/nba-message', async (req, res) => {
   try {
     const { gameId, message, sender } = req.body;
+    const chatMessage = { sender: sender, message: message };
     const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
       gameId,
-      { $push: { chat: { sender: sender, message: message } } },
+      { $push: { chat: chatMessage } },
       { new: true }
     );
-
     if (!updatedGame) {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
-
+    // You can choose to update this to io.in(gameId).emit('new message', chatMessage)
+    // if you want to notify everyone in the room including the sender.
+    socket.broadcast.to(gameId).emit('new message', chatMessage);
     res.json({ success: true, game: updatedGame });
   } catch (error) {
     console.error('Error updating chat array:', error);
@@ -251,6 +252,12 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined game ${gameId}`);
   });
 
+  // New event: leave game
+  socket.on('leave game', (gameId) => {
+    socket.leave(gameId);
+    console.log(`Socket ${socket.id} left game ${gameId}`);
+  });
+
   socket.on('send message', async (data) => {
     try {
       const { gameId, message, sender } = data;
@@ -264,6 +271,8 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
+      // Here you can use io.in(gameId).emit('new message', chatMessage) 
+      // if you want to send the message to everyone in the room.
       socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
       console.error('Error processing message: ', err);

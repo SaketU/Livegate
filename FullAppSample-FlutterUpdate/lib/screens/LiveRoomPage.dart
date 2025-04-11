@@ -95,12 +95,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   void _joinGameRoom() {
     if (SocketManager().socket.connected) {
       SocketManager().joinGame(widget.gameId);
+      print("SUBBSCRIBING");
       subscribeToSocketEvents();
     } else {
       // When the socket connects, join the game room.
       SocketManager().socket.on('connect', (_) {
         print("Socket connected after initialization. Joining game: ${widget.gameId}");
         SocketManager().joinGame(widget.gameId);
+        //print("SUBBSCRIBING");
         subscribeToSocketEvents();
       });
     }
@@ -118,7 +120,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
 
     loadChatMessages();
-
+    print("HEYYY");
     // Only join the game room when entering the chat page.
     _joinGameRoom();
   }

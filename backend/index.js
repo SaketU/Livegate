@@ -192,8 +192,7 @@ app.post('/nba-message', async (req, res) => {
     if (!updatedGame) {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
-    // You can choose to update this to io.in(gameId).emit('new message', chatMessage)
-    // if you want to notify everyone in the room including the sender.
+    // Broadcast the "new message" event to all sockets in the room except the sender.
     socket.broadcast.to(gameId).emit('new message', chatMessage);
     res.json({ success: true, game: updatedGame });
   } catch (error) {
@@ -239,9 +238,7 @@ app.get('/nba-chat/:gameId', async (req, res) => {
 
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: "*"
-  }
+  cors: { origin: "*" }
 });
 
 io.on('connection', (socket) => {
@@ -271,8 +268,8 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
-      // Here you can use io.in(gameId).emit('new message', chatMessage) 
-      // if you want to send the message to everyone in the room.
+      // Broadcast the new message to all sockets in the room except the sender.
+      console.log(`Broadcasting message from ${sender} to room ${gameId}:`, chatMessage);
       socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
       console.error('Error processing message: ', err);

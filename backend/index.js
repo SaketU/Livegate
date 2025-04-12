@@ -259,18 +259,23 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
 const server = http.createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: "http://localhost:8000",
+    origin: "*",
   }
 });
 
+server.listen(8000, () => {
+  console.log('Server listening on port 8000');
+});
+
+
 io.on('connection', (socket) => {
-  console.log('New client connected: ' + socket.id);
+  const origin = socket.handshake.headers.origin;
+  console.log(`New client connected: ${socket.id}, Origin: ${origin}`);
 
   socket.on('join game', (gameId) => {
     socket.join(gameId);
     console.log(`Socket ${socket.id} joined game ${gameId}`);
 
-    // Print all sockets currently in the room
     io.in(gameId).allSockets()
       .then((sockets) => {
         console.log(`Sockets in room ${gameId}:`, Array.from(sockets));
@@ -280,7 +285,6 @@ io.on('connection', (socket) => {
       });
   });
 
-  // New event: leave game
   socket.on('leave game', (gameId) => {
     socket.leave(gameId);
     console.log(`Socket ${socket.id} left game ${gameId}`);
@@ -299,7 +303,6 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
-      // Broadcast the new message to all sockets in the room except the sender.
       console.log(`Broadcasting message from ${sender} to room ${gameId}:`, chatMessage);
       socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
@@ -311,10 +314,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Client disconnected: ' + socket.id);
   });
-});
-
-server.listen(8000, () => {
-  console.log('Server listening on port 8000');
 });
 
 module.exports = app;

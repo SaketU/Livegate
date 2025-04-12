@@ -10,6 +10,32 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+class UserData {
+  final String fullName;
+  final String username;
+  final String email;
+  final List<dynamic> leaguePreferences;
+
+  UserData({
+    required this.fullName,
+    required this.username,
+    required this.email,
+    required this.leaguePreferences,
+  });
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData(
+      fullName: json['fullName'] ?? '',
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      leaguePreferences: json['leaguePreferences'] ?? [],
+    );
+  }
+}
 
 //code
 class ProfilePage extends StatefulWidget {
@@ -27,23 +53,67 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
 
   final profileImage =
-      'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?cs=srgb&dl=pexels-mohamed-abdelghaffar-771742.jpg&fm=jpg'
-  ;
+      'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?cs=srgb&dl=pexels-mohamed-abdelghaffar-771742.jpg&fm=jpg';
 
-  void _signUserOut() {
-  // Disconnect the socket before logging out.
-  SocketManager().disconnect();
-  
-  FirebaseAuth.instance.signOut();
-  FirebaseAuth.instance.authStateChanges().listen((User? user) {
-    if (user == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => AuthPage()),
+  final storage = FlutterSecureStorage();
+  UserData? userData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final token = await storage.read(key: 'accessToken');
+      if (token == null) {
+        throw Exception('No access token found');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/user/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          userData = UserData.fromJson(data);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load user data');
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load user data')),
       );
     }
-  });
-}
+  }
+
+  void _signUserOut() {
+    // Disconnect the socket before logging out.
+    SocketManager().disconnect();
+
+    FirebaseAuth.instance.signOut();
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AuthPage()),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,47 +124,56 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         centerTitle: true,
-        title: Text('@username',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.0248),),
+        title: Text(
+          isLoading ? 'Loading...' : '@${userData?.username ?? "username"}',
+          style: GoogleFonts.interTight(
+              color: Theme.of(context).colorScheme.tertiary,
+              fontWeight: FontWeight.bold,
+              fontSize: screenHeight * 0.0248),
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          onPressed: (){
+          onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(CupertinoIcons.back, size: 30, color: Theme.of(context).colorScheme.tertiary,),
-          padding: EdgeInsets.only(right: 7, bottom: 7), // Remove default padding
+          icon: Icon(
+            CupertinoIcons.back,
+            size: 30,
+            color: Theme.of(context).colorScheme.tertiary,
+          ),
+          padding:
+              EdgeInsets.only(right: 7, bottom: 7), // Remove default padding
           constraints: BoxConstraints(), // Removes size constraints
         ),
         //drawer that contains settings(navigates to settings page), saved, liked, etc
 
         actions: [
-          Padding(padding: EdgeInsets.only(right: 21),
-          child: SvgPicture.asset(
-                      'assets/add_account.svg',
-                      height: screenHeight*0.0308,
-                      width: screenWidth*0.0308,
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.tertiary, 
-                        BlendMode.srcIn,
-                      ),
-                    ),
+          Padding(
+            padding: EdgeInsets.only(right: 21),
+            child: SvgPicture.asset(
+              'assets/add_account.svg',
+              height: screenHeight * 0.0308,
+              width: screenWidth * 0.0308,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.tertiary,
+                BlendMode.srcIn,
+              ),
+            ),
           ),
-
-
-
-
         ],
       ),
-      body:
-      SingleChildScrollView(
+      body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 10.0),
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
-                height: MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                width:
+                    MediaQuery.of(context).size.width * 0.23, // 90px equivalent
+                height:
+                    MediaQuery.of(context).size.width * 0.23, // 90px equivalent
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
@@ -105,25 +184,33 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Stack(
                   children: [
                     Align(
-                      alignment: Alignment(1, 1.2), // Adjust alignment for position
+                      alignment:
+                          Alignment(1, 1.2), // Adjust alignment for position
                       child: Container(
-                        width: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
-                        height: MediaQuery.of(context).size.width * 0.08, // 31px equivalent
+                        width: MediaQuery.of(context).size.width *
+                            0.08, // 31px equivalent
+                        height: MediaQuery.of(context).size.width *
+                            0.08, // 31px equivalent
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Theme.of(context).colorScheme.background, // Border color as container's background
+                          color: Theme.of(context)
+                              .colorScheme
+                              .background, // Border color as container's background
                         ),
                         child: Center(
                           child: Container(
-                            width: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
-                            height: MediaQuery.of(context).size.width * 0.06, // 24px equivalent
+                            width: MediaQuery.of(context).size.width *
+                                0.06, // 24px equivalent
+                            height: MediaQuery.of(context).size.width *
+                                0.06, // 24px equivalent
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.blue, // Blue background
                             ),
                             child: Icon(
                               Icons.add,
-                              size: MediaQuery.of(context).size.width * 0.045, // 18px equivalent
+                              size: MediaQuery.of(context).size.width *
+                                  0.045, // 18px equivalent
                               color: Colors.white, // Icon color
                             ),
                           ),
@@ -134,78 +221,95 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-
-            SizedBox(height: screenHeight*0.0142,),
-
+            SizedBox(
+              height: screenHeight * 0.0142,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Brad Johnson', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.018)),
+                Text(isLoading ? 'Loading...' : userData?.fullName ?? 'User',
+                    style: GoogleFonts.interTight(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenHeight * 0.018)),
               ],
             ),
-
-            SizedBox(height: screenHeight*0.00355,),
-
-            Text('Ravens • Longhorns • Lakers', style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.onTertiary, fontSize: screenHeight*0.018),),
-
+            SizedBox(
+              height: screenHeight * 0.00355,
+            ),
+            Text(
+              isLoading
+                  ? ''
+                  : userData?.leaguePreferences.join(' • ') ??
+                      'No preferences set',
+              style: GoogleFonts.interTight(
+                  color: Theme.of(context).colorScheme.onTertiary,
+                  fontSize: screenHeight * 0.018),
+            ),
             Padding(
-              padding: const EdgeInsets.only(top: 14, right: 8, left: 8, bottom: 15),
-              child: Text("Living life and seeing new things", style: GoogleFonts.interTight(fontSize: screenHeight*0.018),
+              padding:
+                  const EdgeInsets.only(top: 14, right: 8, left: 8, bottom: 15),
+              child: Text(
+                "Living life and seeing new things",
+                style: GoogleFonts.interTight(fontSize: screenHeight * 0.018),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21.0),
               child: Container(
-                height: screenHeight*0.0533,
+                height: screenHeight * 0.0533,
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
                       PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => EditProfilePage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            EditProfilePage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           const begin = Offset(0.0, 1.0); // Start from bottom
                           const end = Offset.zero; // End at normal position
                           const curve = Curves.easeInOut;
 
-                          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                          var tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
                           var offsetAnimation = animation.drive(tween);
 
-                          return SlideTransition(position: offsetAnimation, child: child);
+                          return SlideTransition(
+                              position: offsetAnimation, child: child);
                         },
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme
-                        .of(context)
-                        .colorScheme
-                        .primary,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
                   ),
-              
-                  child: Text('Edit Profile', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: 15, color: Theme
-                      .of(context)
-                      .colorScheme
-                      .tertiary,),),
+                  child: Text(
+                    'Edit Profile',
+                    style: GoogleFonts.interTight(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                  ),
                 ),
               ),
             ),
-
-            SizedBox(height: screenHeight*0.0319,),
-
+            SizedBox(
+              height: screenHeight * 0.0319,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
               child: SizedBox(
-                height: screenHeight*0.0533,
+                height: screenHeight * 0.0533,
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
                       return DisplayPage();
                     }));
                   },
@@ -214,11 +318,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.only(left: 12, right: 14), // Reduce extra padding
+                    padding: EdgeInsets.only(
+                        left: 12, right: 14), // Reduce extra padding
                     elevation: 0,
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.max, // Ensures row takes full width
+                    mainAxisSize:
+                        MainAxisSize.max, // Ensures row takes full width
                     children: <Widget>[
                       SvgPicture.asset(
                         'assets/display_mode.svg',
@@ -248,19 +354,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-
-
-
-            SizedBox(height: screenHeight*0.0236,),
-
+            SizedBox(
+              height: screenHeight * 0.0236,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
               child: SizedBox(
-                height: screenHeight*0.0533,
+                height: screenHeight * 0.0533,
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
                       return HelpPage();
                     }));
                   },
@@ -269,11 +374,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.only(left: 17, right: 14 ), // Adjust horizontal padding
+                    padding: EdgeInsets.only(
+                        left: 17, right: 14), // Adjust horizontal padding
                     elevation: 0,
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.max, // Use max to make full width
+                    mainAxisSize:
+                        MainAxisSize.max, // Use max to make full width
                     children: <Widget>[
                       SvgPicture.asset(
                         'assets/help.svg',
@@ -303,18 +410,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-
-
-            SizedBox(height: screenHeight*0.0236,),
-
+            SizedBox(
+              height: screenHeight * 0.0236,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21),
               child: SizedBox(
-                height: screenHeight*0.0533,
+                height: screenHeight * 0.0533,
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
                       return AboutPage();
                     }));
                   },
@@ -323,11 +430,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.only(left: 15, right: 14), // Reduce extra padding
+                    padding: EdgeInsets.only(
+                        left: 15, right: 14), // Reduce extra padding
                     elevation: 0,
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.max, // Ensures row takes full width
+                    mainAxisSize:
+                        MainAxisSize.max, // Ensures row takes full width
                     children: <Widget>[
                       SvgPicture.asset(
                         'assets/info.svg',
@@ -357,42 +466,41 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-
-
-            SizedBox(height: screenHeight*0.0379,),
-
+            SizedBox(
+              height: screenHeight * 0.0379,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21.0),
               child: Container(
-                height: screenHeight*0.0533,
+                height: screenHeight * 0.0533,
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _signUserOut,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue
-                    : Theme
-                      .of(context)
-                      .colorScheme
-                      .tertiary,
+                    backgroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.blue
+                            : Theme.of(context).colorScheme.tertiary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
                   ),
-              
-                  child: Text('Log out', style: GoogleFonts.interTight(fontWeight: FontWeight.w600, 
-                  color: Colors.white,),),
+                  child: Text(
+                    'Log out',
+                    style: GoogleFonts.interTight(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
-
           ],
         ),
       ),
     );
   }
-
 
 //When images are shown in the profile page
   /* Widget makeDismissible ({required Widget child}) => GestureDetector(

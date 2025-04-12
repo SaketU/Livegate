@@ -236,6 +236,27 @@ app.get('/nba-chat/:gameId', async (req, res) => {
   }
 });
 
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await User.findById(userId).select('-password'); // Exclude password from response
+    
+    if (!user) {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      fullName: user.fullName,
+      username: user.username,
+      email: user.email,
+      leaguePreferences: user.leaguePreferences
+    });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return res.status(500).json({ error: true, message: 'Server error' });
+  }
+});
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: { origin: "*" }

@@ -10,7 +10,6 @@ const User = require('./models/user.model');
 const validator = require('validator');
 
 const http = require('http');
-const socketIo = require('socket.io');
 // const sendVerificationEmail = require('./utils/emailVerification');
 
 mongoose.connect(config.connectionString);
@@ -193,7 +192,7 @@ app.post('/nba-message', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Game not found' });
     }
     // Broadcast the "new message" event to all sockets in the room except the sender.
-    socket.broadcast.to(gameId).emit('new message', chatMessage);
+    io.to(gameId).emit('new message', chatMessage);
     res.json({ success: true, game: updatedGame });
   } catch (error) {
     console.error('Error updating chat array:', error);
@@ -258,8 +257,10 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
 });
 
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: { origin: "*" }
+const io = require('socket.io')(server, {
+  cors: {
+    origin: "http://localhost:8000",
+  }
 });
 
 io.on('connection', (socket) => {

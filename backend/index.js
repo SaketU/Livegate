@@ -256,6 +256,51 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/api/user/update-profile', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { fullName, username, bio, leaguePreferences } = req.body;
+    
+    // Check if username is taken by another user
+    if (username) {
+      const existingUser = await User.findOne({ username, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({ error: true, message: 'Username is already taken' });
+      }
+    }
+
+    const updateData = {};
+    if (fullName) updateData.fullName = fullName;
+    if (username) updateData.username = username;
+    if (bio) updateData.bio = bio;
+    if (leaguePreferences) updateData.leaguePreferences = leaguePreferences;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      error: false,
+      message: 'Profile updated successfully',
+      user: {
+        fullName: updatedUser.fullName,
+        username: updatedUser.username,
+        bio: updatedUser.bio,
+        leaguePreferences: updatedUser.leaguePreferences
+      }
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    return res.status(500).json({ error: true, message: 'Server error' });
+  }
+});
+
 const server = http.createServer(app);
 const io = require('socket.io')(server, {
   cors: {

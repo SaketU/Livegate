@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_reactions/utilities/hero_dialog_route.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:fullapp/models/roomChatModel.dart';
 import 'package:focused_menu/focused_menu.dart';
@@ -16,6 +17,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
+import 'package:flutter_chat_reactions/flutter_chat_reactions.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 class LiveRoomPage extends StatefulWidget {
   final String team1;
@@ -37,6 +40,43 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   bool _isTyping = false;
   String currentUser = '@Unknown';
   List<RoomMessage> messages = [];
+
+  void showEmojiBottomSheet({
+    required RoomMessage message,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SizedBox(
+          height: 510,
+          child: EmojiPicker(
+            onEmojiSelected: ((category, emoji) {
+              // pop the bottom sheet
+              Navigator.pop(context);
+              addReactionToMessage(
+                message: message,
+                reaction: emoji.emoji,
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  // add reaction to message
+  void addReactionToMessage({
+  required RoomMessage message,
+  required String reaction,
+}) {
+  if (message.reactions.containsKey(reaction)) {
+    message.reactions[reaction] = message.reactions[reaction]! + 1;
+  } else {
+    message.reactions[reaction] = 1;
+  }
+  setState(() {});
+}
+  
 
   Future<void> _loadCurrentUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -242,11 +282,47 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               itemCount: messages.length,
               reverse: true, // Scroll from bottom to top
               physics: BouncingScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.zero, // Ensure no extra padding
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               itemBuilder: (context, index) {
                 var message = messages[index];
-                return buildMessage(message, index);
+                return GestureDetector(
+                  onLongPress: () {
+                        // navigate with a custom [HeroDialogRoute] to [ReactionsDialogWidget]
+                        Navigator.of(context).push(
+                          HeroDialogRoute(
+                            builder: (context) {
+                              return ReactionsDialogWidget(
+                                widgetAlignment: Alignment.topLeft,
+                                id: message.id, // unique id for message
+                                messageWidget: buildMessage(message, index), // message widget
+                                onReactionTap: (reaction) {
+                                  print('reaction: $reaction');
+
+                                  if (reaction == '➕') {
+                                    showEmojiBottomSheet(
+                                      message: message,
+                                    );
+                                    // show emoji picker container
+                                  } else {
+                                    addReactionToMessage(
+                                      message: message,
+                                      reaction: reaction,
+                                    );
+                                    // add reaction to message
+                                  }
+                                },
+                                onContextMenuTap: (menuItem) {
+                                  print('menu item: $menuItem');
+                                  // handle context menu item
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                  child: buildMessage(message, index),
+                );
               },
             ),
           ),
@@ -374,72 +450,146 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   Widget buildMessage(RoomMessage message, int index) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+
+    // Check if the previous message was from the same sender
+    bool isConsecutiveMessage = index < messages.length - 1 && 
+                              messages[index + 1].name == message.name;
+
+    bool hasReaction = message.reactions.isNotEmpty;
+    bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name;
+    double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0); // Extra padding for reactions and last message from user
+
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+      padding: EdgeInsets.only(
+        top: isConsecutiveMessage ? 2 : 7,
+        bottom: bottomPadding, // Use dynamic bottom padding based on reactions
+        left: 15,
+        right: 15,
+      ),
       child: Align(
-        alignment: (message.messageType == "receiver"
+        alignment: (messages[index].messageType == "receiver"
             ? Alignment.centerLeft
             : Alignment.centerRight),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Profile Image
-            CircleAvatar(
-              backgroundImage: NetworkImage(message.profileImage),
-              maxRadius: screenHeight * 0.020,
-            ),
-            SizedBox(width: screenWidth * 0.008),
+            // Profile Image - only show if not a consecutive message
+            if (!isConsecutiveMessage) ...[
+              CircleAvatar(
+                backgroundImage: NetworkImage(message.profileImage),
+                maxRadius: screenHeight * 0.020,
+              ),
+              SizedBox(width: screenWidth * 0.008),
+            ],
             // Name and Message Content
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Name
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return UsersProfilePage();
-                      }));
-                    },
-                    child: Text(
-                      message.name,
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.018,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: isConsecutiveMessage
+                      ? screenHeight * 0.040 + screenWidth * 0.008
+                      : 0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Name - only show if not a consecutive message
+                    if (!isConsecutiveMessage)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return UsersProfilePage();
+                          }));
+                        },
+                        child: Text(
+                          message.name,
+                          style: GoogleFonts.interTight(
+                            fontSize: screenHeight * 0.018,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
                       ),
+                    if (!isConsecutiveMessage) SizedBox(height: 5),
+
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Message Content
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.8,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: (messages[index].messageType == "receiver"
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.blue
+                                    : Theme.of(context).colorScheme.secondary),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.0095, horizontal: 17),
+                          child: Text(
+                            messages[index].messageContent,
+                            style: GoogleFonts.interTight(
+                              fontSize: screenHeight * 0.018,
+                              color: messages[index].messageType == "receiver"
+                                  ? Theme.of(context).colorScheme.tertiary
+                                  : Theme.of(context).colorScheme.onSecondary,
+                            ),
+                          ),
+                        ),
+
+                        // Reactions stacked on top of the message
+                        if (hasReaction)
+                          Positioned(
+                            bottom: -23, // Moved lower from -20
+                            left: 7,
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: message.reactions.entries.map((entry) {
+                                    String emoji = entry.key;
+                                    int count = entry.value;
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                                      child: Row(
+                                        children: [
+                                          Text(emoji, style: TextStyle(fontSize: 13)),
+                                          if (count > 1)
+                                            Padding(
+                                              padding: const EdgeInsets.only(left: 2),
+                                              child: Text(
+                                                count.toString(),
+                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  // Message Content
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.8,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: (message.messageType == "receiver"
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).brightness == Brightness.dark
-                              ? Colors.blue
-                              : Theme.of(context).colorScheme.secondary),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      vertical: screenHeight * 0.0095,
-                      horizontal: 17,
-                    ),
-                    child: Text(
-                      message.messageContent,
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.018,
-                        color: message.messageType == "receiver"
-                            ? Theme.of(context).colorScheme.tertiary
-                            : Theme.of(context).colorScheme.onSecondary,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

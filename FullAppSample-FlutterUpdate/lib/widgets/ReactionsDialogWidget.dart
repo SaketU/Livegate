@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+
+
 class ReactionsDialogWidget extends StatelessWidget {
   final String id;
   final Widget messageWidget;

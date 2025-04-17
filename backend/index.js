@@ -1,5 +1,4 @@
 require('dotenv').config();
-const config = require('./config.json');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const express = require('express');
@@ -10,9 +9,19 @@ const User = require('./models/user.model');
 const validator = require('validator');
 
 const http = require('http');
-// const sendVerificationEmail = require('./utils/emailVerification');
 
-mongoose.connect(config.connectionString);
+const uri = process.env.MONGO_URI;
+if (!uri) {
+  process.exit(1);
+}
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => {
+  process.exit(1);
+});
 
 const NBAgameDefault = require('./models/NBAgame.model');
 const NBAgameSchema = NBAgameDefault.schema;

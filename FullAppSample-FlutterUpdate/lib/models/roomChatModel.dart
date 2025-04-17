@@ -4,12 +4,15 @@ import 'package:uuid/uuid.dart';
 
 class RoomMessage {
   String id; // Unique ID for each message
-  String name;
-  String profileImage;
-  String messageContent;
-  String messageType;
+  final String name;
+  final String profileImage;
+  final String messageContent;
+  final String messageType;
   bool selected;
-  Map<String, int> reactions; // Changed from List<String> to Map<String, int>
+  Map<String, int> reactions;
+  // New fields for reply functionality
+  RoomMessage? replyTo;
+  String? replyToName;
 
   RoomMessage({
     String? id,
@@ -17,8 +20,10 @@ class RoomMessage {
     required this.profileImage,
     required this.messageContent,
     required this.messageType,
-    required this.selected,
-    Map<String, int>? reactions, // Updated type
+    this.selected = false,
+    Map<String, int>? reactions,
+    this.replyTo,
+    this.replyToName,
   })  : id = id ?? const Uuid().v4(),
         reactions = reactions ?? {}; // Initialize as empty map if null
 }

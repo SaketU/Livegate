@@ -37,9 +37,12 @@ class LiveRoomPage extends StatefulWidget {
 
 class _LiveRoomPageState extends State<LiveRoomPage> {
   TextEditingController _controller = TextEditingController();
+  ScrollController _scrollController = ScrollController();
   bool _isTyping = false;
+  bool _showScrollButton = false;
   String currentUser = '@Unknown';
   List<RoomMessage> messages = [];
+  RoomMessage? replyingTo;
 
   void showEmojiBottomSheet({
     required RoomMessage message,
@@ -158,16 +161,28 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       });
     });
 
+    _scrollController.addListener(() {
+      if (_scrollController.offset > 100) {
+        setState(() {
+          _showScrollButton = true;
+        });
+      } else {
+        setState(() {
+          _showScrollButton = false;
+        });
+      }
+    });
+
     loadChatMessages();
     subscribeToSocketEvents();
     print("HEYYY");
-    // Only join the game room when entering the chat page.
     _joinGameRoom();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     // Leave the game room when exiting the LiveRoomPage.
     SocketManager().leaveGame(widget.gameId);
     SocketManager().socket.off('new message');
@@ -179,6 +194,22 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       "gameId": gameId,
       "message": messageText,
       "sender": sender,
+    });
+  }
+
+  // Add method to handle reply to message
+  void replyToMessage(RoomMessage message) {
+    setState(() {
+      replyingTo = message;
+    });
+    // Focus the text field
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  // Add method to cancel reply
+  void cancelReply() {
+    setState(() {
+      replyingTo = null;
     });
   }
 
@@ -274,173 +305,235 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           ),
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Chat messages (Scrollable List)
-          Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              reverse: true, // Scroll from bottom to top
-              physics: BouncingScrollPhysics(),
-              padding: EdgeInsets.zero, // Ensure no extra padding
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              itemBuilder: (context, index) {
-                var message = messages[index];
-                return GestureDetector(
-                  onLongPress: () {
-                        // navigate with a custom [HeroDialogRoute] to [ReactionsDialogWidget]
-                        Navigator.of(context).push(
-                          HeroDialogRoute(
-                            builder: (context) {
-                              return ReactionsDialogWidget(
-                                widgetAlignment: Alignment.topLeft,
-                                id: message.id, // unique id for message
-                                messageWidget: buildMessage(message, index), // message widget
-                                onReactionTap: (reaction) {
-                                  print('reaction: $reaction');
+          Column(
+            children: [
+              // Chat messages (Scrollable List)
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: messages.length,
+                  reverse: true,
+                  physics: BouncingScrollPhysics(),
+                  padding: EdgeInsets.only(bottom: 15),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  itemBuilder: (context, index) {
+                    var message = messages[index];
+                    return GestureDetector(
+                      onLongPress: () {
+                            // navigate with a custom [HeroDialogRoute] to [ReactionsDialogWidget]
+                            Navigator.of(context).push(
+                              HeroDialogRoute(
+                                builder: (context) {
+                                  return ReactionsDialogWidget(
+                                    widgetAlignment: Alignment.topLeft,
+                                    id: message.id, // unique id for message
+                                    messageWidget: buildMessage(message, index), // message widget
+                                    onReactionTap: (reaction) {
+                                      print('reaction: $reaction');
 
-                                  if (reaction == '➕') {
-                                    showEmojiBottomSheet(
-                                      message: message,
-                                    );
-                                    // show emoji picker container
-                                  } else {
-                                    addReactionToMessage(
-                                      message: message,
-                                      reaction: reaction,
-                                    );
-                                    // add reaction to message
-                                  }
+                                      if (reaction == '➕') {
+                                        showEmojiBottomSheet(
+                                          message: message,
+                                        );
+                                        // show emoji picker container
+                                      } else {
+                                        addReactionToMessage(
+                                          message: message,
+                                          reaction: reaction,
+                                        );
+                                        // add reaction to message
+                                      }
+                                    },
+                                    onContextMenuTap: (menuItem) {
+                                      print('menu item: $menuItem');
+                                      onContextMenuTap(menuItem, message);
+                                    },
+                                  );
                                 },
-                                onContextMenuTap: (menuItem) {
-                                  print('menu item: $menuItem');
-                                  // handle context menu item
-                                },
-                              );
-                            },
-                          ),
-                        );
+                              ),
+                            );
+                          },
+                      onHorizontalDragEnd: (details) {
+                        // Only detect right to left swipes (negative velocity means right to left)
+                        if (details.primaryVelocity! < 0) {
+                          replyToMessage(message);
+                        }
                       },
-                  child: buildMessage(message, index),
-                );
-              },
-            ),
-          ),
-          // Input Field Section
-          Container(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Color(0Xff242525)
-                : Colors.white,
-            child: SafeArea(
-              top: false,
-              bottom: true,
-              child: Container(
-                height: screenHeight * 0.053,
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 6),
+                      child: buildMessage(message, index),
+                    );
+                  },
+                ),
+              ),
+              // Show reply preview if replying to a message
+              if (replyingTo != null)
+                Container(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Color(0Xff242525)
+                      : Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Replying to ${replyingTo!.name}',
+                                  style: GoogleFonts.interTight(
+                                    fontSize: 12,
+                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 1),
+                            Text(
+                              replyingTo!.messageContent,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.interTight(
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.tertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: cancelReply,
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                    ],
+                  ),
+                ),
+              // Input Field Section
+              Container(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Color(0Xff242525)
                     : Colors.white,
-                child: Row(
-                  children: <Widget>[
-                    SizedBox(width: 15),
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
-                      maxRadius: screenHeight * 0.020,
-                    ),
-                    SizedBox(width: 13),
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        cursorColor: Theme.of(context).colorScheme.tertiary,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.only(top: 11, left: 12),
-                          suffixIconConstraints: BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 20,
-                          ),
-                          suffixIcon: Padding(
-                            padding: const EdgeInsets.only(right: 12.0),
-                            child: SvgPicture.asset(
-                              'assets/stickers.svg',
-                              width: screenWidth * 0.025,
-                              height: screenHeight * 0.025,
-                              colorFilter: ColorFilter.mode(
-                                Theme.of(context).colorScheme.tertiary,
-                                BlendMode.srcIn,
+                child: SafeArea(
+                  top: false,
+                  bottom: true,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(width: 15),
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(
+                              'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                          maxRadius: screenHeight * 0.020,
+                        ),
+                        SizedBox(width: 13),
+                        Expanded(
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxHeight: screenHeight * 0.25,
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 0),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              borderRadius: BorderRadius.circular(17),
+                            ),
+                            child: TextField(
+                              controller: _controller,
+                              cursorColor: Theme.of(context).colorScheme.tertiary,
+                              minLines: 1,
+                              maxLines: 5,
+                              keyboardType: TextInputType.multiline,
+                              style: TextStyle(fontSize: 14), // You can tweak this
+                              decoration: InputDecoration(
+                                isCollapsed: true, // Minimizes vertical padding
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 8, // Reduce height here
+                                  horizontal: 12,
+                                ),
+                                suffixIconConstraints: BoxConstraints(
+                                  minWidth: 20,
+                                  minHeight: 20,
+                                ),
+                                suffixIcon: Padding(
+                                  padding: const EdgeInsets.only(right: 12.0),
+                                  child: SvgPicture.asset(
+                                    'assets/stickers.svg',
+                                    width: screenWidth * 0.025,
+                                    height: screenHeight * 0.025,
+                                    colorFilter: ColorFilter.mode(
+                                      Theme.of(context).colorScheme.tertiary,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                                border: InputBorder.none,
                               ),
                             ),
                           ),
-                          filled: true,
-                          fillColor: Theme.of(context).colorScheme.onPrimary,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(17),
-                            borderSide: BorderSide(color: Colors.transparent),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(17),
-                            borderSide: BorderSide(color: Colors.transparent),
+                        ),
+                        SizedBox(width: 13),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 18),
+                          child: GestureDetector(
+                            onTap: _isTyping ? _sendMessage : null,
+                            child: Container(
+                              height: screenHeight * 0.040,
+                              width: screenHeight * 0.040,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _isTyping
+                                    ? Colors.black
+                                    : Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.grey.shade800
+                                        : Colors.grey[350],
+                              ),
+                              child: Icon(
+                                Icons.send,
+                                color: _isTyping
+                                    ? Colors.white
+                                    : Theme.of(context).brightness == Brightness.dark
+                                        ? Colors.white60
+                                        : Colors.white70,
+                                size: screenHeight * 0.020,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    SizedBox(width: 13),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 18),
-                      child: GestureDetector(
-                        onTap: _isTyping
-                            ? () {
-                                String messageText = _controller.text.trim();
-                                if (messageText.isNotEmpty) {
-                                  // Update the UI with the sender message
-                                  setState(() {
-                                    messages.insert(
-                                      0,
-                                      RoomMessage(
-                                        name: currentUser,
-                                        profileImage:
-                                            'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-                                        messageContent: messageText,
-                                        messageType: "sender",
-                                        selected: true,
-                                      ),
-                                    );
-                                  });
-                                  // Emit the message via the SocketManager
-                                  emitMessage(widget.gameId, messageText, currentUser);
-                                  _controller.clear();
-                                }
-                              }
-                            : null,
-                        child: Container(
-                          height: screenHeight * 0.040,
-                          width: screenHeight * 0.040,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _isTyping
-                                ? Colors.black
-                                : Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.grey.shade800
-                                    : Colors.grey[350],
-                          ),
-                          child: Icon(
-                            Icons.send,
-                            color: _isTyping
-                                ? Colors.white
-                                : Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white60
-                                    : Colors.white70,
-                            size: screenHeight * 0.020,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Scroll to bottom button
+          if (_showScrollButton)
+            Positioned(
+              right: 20,
+              bottom: 300,
+              child: FloatingActionButton(
+                mini: true,
+                elevation: 0,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                onPressed: () {
+                  _scrollController.animateTo(
+                    0.0,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                },
+                child: Icon(
+                  CupertinoIcons.chevron_down_circle,
+                  color: Theme.of(context).colorScheme.tertiary,
+                  size: screenHeight * 0.026,
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -450,38 +543,34 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   Widget buildMessage(RoomMessage message, int index) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-
-    // Check if the previous message was from the same sender
     bool isConsecutiveMessage = index < messages.length - 1 && 
-                              messages[index + 1].name == message.name;
-
-    bool hasReaction = message.reactions.isNotEmpty;
-    bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name;
-    double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0); // Extra padding for reactions and last message from user
+                              messages[index + 1].name == message.name; //check if the next message is from the same user
+    bool hasReaction = message.reactions.isNotEmpty; //check if the message has reactions
+    bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name; //check if the message is the last message from the user  
+    double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0); //space between reactions and between messages if it's the last message from the user
 
     return Container(
       padding: EdgeInsets.only(
-        top: isConsecutiveMessage ? 2 : 7,
-        bottom: bottomPadding, // Use dynamic bottom padding based on reactions
+        top: isConsecutiveMessage ? 2 : 7, //space between messages
+        bottom: bottomPadding,
         left: 15,
         right: 15,
       ),
       child: Align(
-        alignment: (messages[index].messageType == "receiver"
-            ? Alignment.centerLeft
-            : Alignment.centerRight),
+        alignment: Alignment.centerLeft,  // Always align from left
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,  // Change to align from top
           children: [
-            // Profile Image - only show if not a consecutive message
             if (!isConsecutiveMessage) ...[
-              CircleAvatar(
-                backgroundImage: NetworkImage(message.profileImage),
-                maxRadius: screenHeight * 0.020,
+              Padding(
+                padding: EdgeInsets.only(top: screenHeight * 0.016),  // Small top padding to align with username
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(message.profileImage),
+                  maxRadius: screenHeight * 0.020,
+                ),
               ),
               SizedBox(width: screenWidth * 0.008),
             ],
-            // Name and Message Content
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(
@@ -493,7 +582,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Name - only show if not a consecutive message
                     if (!isConsecutiveMessage)
                       GestureDetector(
                         onTap: () {
@@ -511,19 +599,61 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                           ),
                         ),
                       ),
-                    if (!isConsecutiveMessage) SizedBox(height: 5),
+                    if (!isConsecutiveMessage) SizedBox(height: 3),//space between username and message
+
+                    // Reply preview if this is a reply message
+                    if (message.replyTo != null)
+                      Container(
+                        margin: EdgeInsets.only(bottom: 4), //space between reply preview and message
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.arrow_turn_down_right,
+                                  size: 15,
+                                  color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  message.replyToName ?? '',
+                                  style: GoogleFonts.interTight(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 2), //space between arrow and reply message
+                            Padding(
+                              padding: EdgeInsets.only(left: 16),
+                              child: Text(
+                                message.replyTo!.messageContent,
+                                style: GoogleFonts.interTight(
+                                  fontSize: 12,
+                                  color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        // Message Content
                         Container(
                           constraints: BoxConstraints(
                             maxWidth: MediaQuery.of(context).size.width * 0.8,
                           ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            color: (messages[index].messageType == "receiver"
+                            color: (message.messageType == "receiver"
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).brightness == Brightness.dark
                                     ? Colors.blue
@@ -532,21 +662,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                           padding: EdgeInsets.symmetric(
                               vertical: screenHeight * 0.0095, horizontal: 17),
                           child: Text(
-                            messages[index].messageContent,
+                            message.messageContent,
                             style: GoogleFonts.interTight(
                               fontSize: screenHeight * 0.018,
-                              color: messages[index].messageType == "receiver"
+                              color: message.messageType == "receiver"
                                   ? Theme.of(context).colorScheme.tertiary
                                   : Theme.of(context).colorScheme.onSecondary,
                             ),
                           ),
                         ),
 
-                        // Reactions stacked on top of the message
                         if (hasReaction)
                           Positioned(
-                            bottom: -23, // Moved lower from -20
-                            left: 7,
+                            bottom: -23,
+                            left: message.messageType == "receiver" ? 7 : null,
+                            right: message.messageType == "receiver" ? null : 7,
                             child: Container(
                               padding: EdgeInsets.all(2),
                               decoration: BoxDecoration(
@@ -562,20 +692,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: message.reactions.entries.map((entry) {
-                                    String emoji = entry.key;
-                                    int count = entry.value;
-
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 4),
                                       child: Row(
                                         children: [
-                                          Text(emoji, style: TextStyle(fontSize: 13)),
-                                          if (count > 1)
+                                          Text(entry.key, style: TextStyle(fontSize: 13)),
+                                          if (entry.value > 1)
                                             Padding(
                                               padding: const EdgeInsets.only(left: 2),
                                               child: Text(
-                                                count.toString(),
-                                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey),
+                                                entry.value.toString(),
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey,
+                                                ),
                                               ),
                                             ),
                                         ],
@@ -596,6 +727,74 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         ),
       ),
     );
+  }
+
+  void onContextMenuTap(dynamic menuItem, RoomMessage message) {
+    Navigator.of(context).pop(); // Close the reactions dialog
+    String action = menuItem.toString().toLowerCase();
+    switch (action) {
+      case 'reply':
+        replyToMessage(message);
+        break;
+      case 'copy':
+        // Handle copy
+        break;
+      case 'report':
+        // Handle report
+        break;
+    }
+  }
+
+  void _sendMessage() {
+    String messageText = _controller.text.trim();
+    if (messageText.isNotEmpty) {
+      // Create the new message
+      RoomMessage newMessage = RoomMessage(
+        name: currentUser,
+        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+        messageContent: messageText,
+        messageType: "sender",
+        selected: true,
+        replyTo: replyingTo,
+        replyToName: replyingTo?.name,
+      );
+
+      // Update UI
+      setState(() {
+        messages.insert(0, newMessage);
+        replyingTo = null; // Clear the reply
+      });
+
+      // Scroll to bottom after the message is added
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            0.0,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+
+      // Prepare socket message data
+      Map<String, dynamic> messageData = {
+        "gameId": widget.gameId,
+        "message": messageText,
+        "sender": currentUser,
+      };
+
+      // Add reply information if present
+      if (newMessage.replyTo != null) {
+        messageData["replyTo"] = {
+          "name": newMessage.replyToName,
+          "message": newMessage.replyTo!.messageContent,
+        };
+      }
+
+      // Send message through socket
+      SocketManager().socket.emit('send message', messageData);
+      _controller.clear();
+    }
   }
 }
 

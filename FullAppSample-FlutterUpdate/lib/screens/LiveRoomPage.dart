@@ -142,7 +142,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     } else {
       // When the socket connects, join the game room.
       SocketManager().socket.on('connect', (_) {
-        print("Socket connected after initialization. Joining game: ${widget.gameId}");
         SocketManager().joinGame(widget.gameId);
         subscribeToSocketEvents();
       });

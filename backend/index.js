@@ -254,19 +254,13 @@ const io = require('socket.io')(server, { cors: { origin: '*' } });
 // Bind to the port provided by Cloud Run or default to 8080
 const PORT = Number(process.env.PORT) || 8080;
 server.listen(PORT, () => {
-  console.log(`🚀 Server listening on port ${PORT}`);
 });
 
 io.on('connection', socket => {
   const origin = socket.handshake.headers.origin;
-  console.log(`New client connected: ${socket.id}, Origin: ${origin}`);
 
   socket.on('join game', gameId => {
     socket.join(gameId);
-    console.log(`Socket ${socket.id} joined game ${gameId}`);
-    io.in(gameId).allSockets()
-      .then(sockets => console.log(`Sockets in room ${gameId}:`, Array.from(sockets)))
-      .catch(err => console.error('Error retrieving sockets in room:', err));
   });
 
   socket.on('leave game', gameId => {
@@ -283,7 +277,6 @@ io.on('connection', socket => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
-      console.log(`Broadcasting message from ${sender} to room ${gameId}:`, chatMessage);
       socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
       console.error('Error processing message:', err);
@@ -291,7 +284,6 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on('disconnect', () => console.log('Client disconnected: ' + socket.id));
 });
 
 module.exports = app;

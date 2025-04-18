@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fullapp/config.dart';
+
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -55,7 +57,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (token == null) throw Exception('No access token found');
 
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/user/profile'),
+        Uri.parse('$kBackendBaseUrl/api/user/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -91,7 +93,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (token == null) throw Exception('No access token found');
 
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/user/update-profile'),
+        Uri.parse('$kBackendBaseUrl/api/user/update-profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart';
+import 'package:fullapp/config.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -49,7 +50,7 @@ class _PasswordPageState extends State<PasswordPage> {
       return false;
     }
 
-    final url = Uri.parse('http://localhost:8000/set-password');
+    final url = Uri.parse('$kBackendBaseUrl/set-password');
     try {
       final body = jsonEncode({
         'fullName': widget.fullName,

@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:fullapp/config.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -51,8 +52,7 @@ class _LeaguePreferencePageState extends State<LeaguePreferencePage> {
     );
     return;
   }
-
-  final url = Uri.parse('http://localhost:8000/set-leagues'); // Adjust URL if needed.
+  final url = Uri.parse('$kBackendBaseUrl/set-leagues');
   try {
     final response = await http.post(
       url,

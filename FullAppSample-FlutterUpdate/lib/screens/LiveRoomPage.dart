@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
 import 'package:flutter_chat_reactions/flutter_chat_reactions.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:fullapp/config.dart';
 
 class LiveRoomPage extends StatefulWidget {
   final String team1;
@@ -89,7 +90,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   Future<void> loadChatMessages() async {
-    final url = Uri.parse('http://localhost:8000/nba-chat/${widget.gameId}');
+    final url = Uri.parse('$kBackendBaseUrl/nba-chat/${widget.gameId}');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -138,13 +139,11 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   void _joinGameRoom() {
     if (SocketManager().socket.connected) {
       SocketManager().joinGame(widget.gameId);
-      print("SUBBSCRIBING");
     } else {
       // When the socket connects, join the game room.
       SocketManager().socket.on('connect', (_) {
         print("Socket connected after initialization. Joining game: ${widget.gameId}");
         SocketManager().joinGame(widget.gameId);
-        //print("SUBBSCRIBING");
         subscribeToSocketEvents();
       });
     }
@@ -175,7 +174,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
     loadChatMessages();
     subscribeToSocketEvents();
-    print("HEYYY");
     _joinGameRoom();
   }
 

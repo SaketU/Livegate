@@ -10,6 +10,7 @@ import 'package:fullapp/screens/searchPage.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:fullapp/config.dart';
 
 
 //code
@@ -34,7 +35,8 @@ class _LivesPageState extends State<LivesPage> {
   }
 
   Future<List<Rooms>> fetchNBAGames() async {
-    final response = await http.get(Uri.parse('http://localhost:8000/api/nba-games'));
+    
+    final response = await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
 
     if (response.statusCode == 200) {
       List<dynamic> jsonData = json.decode(response.body);

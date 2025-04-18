@@ -11,6 +11,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart';
+import 'package:fullapp/config.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
@@ -28,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   Future logIn() async {
-    final url = Uri.parse('http://localhost:8000/login');
+    final url = Uri.parse('$kBackendBaseUrl/login');
 
     try {
       final response = await http.post(

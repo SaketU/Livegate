@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fullapp/auth/authPage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fullapp/config.dart';
 
 
 class SignUpPage extends StatefulWidget{
@@ -39,7 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
    Future signUp() async {
-    final url = Uri.parse('http://localhost:8000/set-email');
+    final url = Uri.parse('$kBackendBaseUrl/set-email');
 
     try {
       final response = await http.post(

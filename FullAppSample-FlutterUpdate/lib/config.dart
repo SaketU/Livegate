@@ -1,0 +1,1 @@
+const String kBackendBaseUrl = 'https://livegate-backend-msbzyqllka-uc.a.run.app';

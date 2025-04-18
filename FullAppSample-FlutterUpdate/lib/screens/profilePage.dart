@@ -13,6 +13,7 @@ import 'package:fullapp/services/socket_manager.dart'; // Import your SocketMana
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fullapp/config.dart';
 
 class UserData {
   final String fullName;
@@ -73,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/user/profile'),
+        Uri.parse('$kBackendBaseUrl/api/user/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -266,6 +266,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                 ),
               ),
               Spacer(),
+                Padding(
+                  padding: EdgeInsets.only(right: 18),
+                  child: SvgPicture.asset(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 'assets/app_logos/LIVEGATE_dark.svg'
+                      : 'assets/app_logos/LIVEGATE_light.svg',
+                  height: screenHeight * 0.022,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.tertiary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+
+              /* //share and report button
               Padding(
                 padding: EdgeInsets.only(right: 18),
                 child: GestureDetector(
@@ -298,6 +313,8 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                   ),
                 ),
               ),
+              */
+
             ],
           ),
         ),
@@ -653,7 +670,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             color: (message.messageType == "receiver"
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.blue
+                                    ? Color(0xFFFCB206) //or purpleAccent or blue
                                     : Theme.of(context).colorScheme.secondary),
                           ),
                           padding: EdgeInsets.symmetric(

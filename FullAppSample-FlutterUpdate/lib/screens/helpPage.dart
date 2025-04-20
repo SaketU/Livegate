@@ -45,7 +45,7 @@ class _HelpPageState extends State<HelpPage> {
             TextSpan(text: 'Getting Started\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.021,)),
             WidgetSpan(child: SizedBox(height: 30),),
             TextSpan(text: 'How do I create an account?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
-            TextSpan(text: '1. Open the app and tap "Sign Up."\n2. Enter your email and create a password.\n3. Verify your email by clicking the link sent to your inbox.\n4. Set up your profile and start using the app!\n\n'),
+            TextSpan(text: '1. Open the app and tap "Sign Up."\n2. Enter your email and create a password.\n3. Set up your preferences and start using the app!\n\n'),
             
             TextSpan(text: 'How do I log in?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
             TextSpan(text: 'Simply open the app, tap "Log In" and enter your registered email or username and password.\n\n'),
@@ -55,7 +55,7 @@ class _HelpPageState extends State<HelpPage> {
             
             TextSpan(text: 'Using the App\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.021)),
             WidgetSpan(child: SizedBox(height: 30),),
-            TextSpan(text: 'How do chats rooms work?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
+            TextSpan(text: 'How do chat rooms work?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
             TextSpan(text: 'Live chat rooms are active conversations about games that are happening in real time. You can join and leave the chat whenever you want.\n\n'),
             
             TextSpan(text: 'How do I send a message?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
@@ -68,10 +68,10 @@ class _HelpPageState extends State<HelpPage> {
             WidgetSpan(child: SizedBox(height: 30),),
             TextSpan(text: 'What is the Privacy Policy?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
             TextSpan(text: 'Feel free to review our Privacy Policy so you can be well informed of how we collect and use information.\n\n'),
-
+            /*
             TextSpan(text: 'How do I delete my account?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),
             TextSpan(text: 'If you wish to delete your account, go to "Settings" > "Account" > "Delete Account." This action is irreversible.\n\n'),
-            
+            */
             TextSpan(text: 'Troubleshooting\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.021)),
             WidgetSpan(child: SizedBox(height: 30),),
             TextSpan(text: 'The app is not working properly. What should I do?\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.019)),

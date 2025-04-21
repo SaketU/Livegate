@@ -50,21 +50,84 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) {
-        return SizedBox(
-          height: 510,
-          child: EmojiPicker(
-            onEmojiSelected: ((category, emoji) {
-              // pop the bottom sheet
-              Navigator.pop(context);
-              addReactionToMessage(
-                message: message,
-                reaction: emoji.emoji,
-              );
-            }),
+        return Container(
+          height: 710,
+          child: Column(
+            children: [
+              // Emoji Picker with custom layout
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: Container(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Color(0Xff242525)
+                        : Colors.white,
+                    child: EmojiPicker(
+                      onEmojiSelected: (category, emoji) {
+                        Navigator.pop(context);
+                        addReactionToMessage(
+                          message: message,
+                          reaction: emoji.emoji,
+                        );
+                      },
+                      config: Config(
+                        emojiViewConfig: EmojiViewConfig(
+                          columns: 6,
+                          emojiSizeMax: 28,
+                          verticalSpacing: 0,
+                          horizontalSpacing: 0,
+                          gridPadding: EdgeInsets.zero,
+                          backgroundColor: Theme.of(context).brightness == Brightness.dark
+                            ? Color(0xFF121212)
+                            : Colors.white,
+                          recentsLimit: 28,
+                        ),
+                        categoryViewConfig: CategoryViewConfig(
+                          tabBarHeight: 54,
+                          indicatorColor: Theme.of(context).colorScheme.tertiary,
+                          iconColor: Colors.grey,
+                          iconColorSelected: Theme.of(context).colorScheme.tertiary,
+                          backgroundColor: Theme.of(context).brightness == Brightness.dark
+                              ? Color(0Xff242525)
+                              : Colors.white,
+                        ),
+                        bottomActionBarConfig: BottomActionBarConfig(
+                          showBackspaceButton: false,
+                          showSearchViewButton: false,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildEmojiButton(String emoji, RoomMessage message) {
+    return InkWell(
+      onTap: () {
+        addReactionToMessage(
+          message: message,
+          reaction: emoji,
+        );
+        Navigator.pop(context);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Text(
+          emoji,
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
     );
   }
 
@@ -473,6 +536,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                   minWidth: 20,
                                   minHeight: 20,
                                 ),
+                                /*
                                 suffixIcon: Padding(
                                   padding: const EdgeInsets.only(right: 12.0),
                                   child: SvgPicture.asset(
@@ -485,6 +549,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                     ),
                                   ),
                                 ),
+                                */
                                 border: InputBorder.none,
                               ),
                             ),

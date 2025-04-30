@@ -268,18 +268,27 @@ io.on('connection', socket => {
     console.log(`Socket ${socket.id} left game ${gameId}`);
   });
 
-  socket.on('send message', async data => {
+  socket.on('send message', async (data) => {
     try {
-      const { gameId, message, sender } = data;
-      const chatMessage = { sender, message };
-      const updatedGame = await NBAgameLeagues.findByIdAndUpdate(gameId, { $push: { chat: chatMessage } }, { new: true });
+      const { gameId, message, sender, messageType } = data;
+      const chatMessage = { 
+        sender: sender, 
+        message: message,
+        messageType: messageType || 'receiver'  // Include messageType in the chat message
+      };
+      const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
+        gameId,
+        { $push: { chat: chatMessage } },
+        { new: true }
+      );
       if (!updatedGame) {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
+      console.log(`Broadcasting message from ${sender} to room ${gameId}:`, chatMessage);
       socket.broadcast.to(gameId).emit('new message', chatMessage);
     } catch (err) {
-      console.error('Error processing message:', err);
+      console.error('Error processing message: ', err);
       socket.emit('error', { message: 'Server error' });
     }
   });

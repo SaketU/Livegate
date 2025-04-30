@@ -161,14 +161,15 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       final List<dynamic> chatArray = data['chat'];
       setState(() {
         messages = chatArray.map((chatEntry) {
+          final String sender = chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
+              ? chatEntry['sender']
+              : 'Unknown';
           return RoomMessage(
-            name: chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
-                ? '@${chatEntry['sender']}'
-                : '@Unknown',
+            name: '@$sender',
             profileImage:
                 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
             messageContent: chatEntry['message'] ?? '',
-            messageType: 'receiver',
+            messageType: sender == currentUser ? 'sender' : 'receiver',
             selected: true,
           );
         }).toList().reversed.toList();
@@ -187,11 +188,11 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           RoomMessage(
             name: data['sender'] != null && data['sender'].toString().isNotEmpty
                 ? '@${data['sender']}'
-                : 'OtherUser',
+                : '@Unknown',
             profileImage:
                 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
             messageContent: data['message'] ?? '',
-            messageType: 'receiver',
+            messageType: data['sender'] == currentUser ? 'sender' : 'receiver',
             selected: true,
           ),
         );
@@ -735,7 +736,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             color: (message.messageType == "receiver"
                                 ? Theme.of(context).colorScheme.primary
                                 : Theme.of(context).brightness == Brightness.dark
-                                    ? Color(0xFFFCB206) //or purpleAccent or blue
+                                    ? Colors.blue //or purpleAccent or blue
                                     : Theme.of(context).colorScheme.secondary),
                           ),
                           padding: EdgeInsets.symmetric(
@@ -829,7 +830,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     if (messageText.isNotEmpty) {
       // Create the new message
       RoomMessage newMessage = RoomMessage(
-        name: currentUser,
+        name: '@$currentUser',
         profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
         messageContent: messageText,
         messageType: "sender",
@@ -860,6 +861,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         "gameId": widget.gameId,
         "message": messageText,
         "sender": currentUser,
+        "messageType": "sender"
       };
 
       // Add reply information if present

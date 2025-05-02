@@ -20,6 +20,7 @@ import 'package:fullapp/services/socket_manager.dart'; // Import your SocketMana
 import 'package:flutter_chat_reactions/flutter_chat_reactions.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fullapp/config.dart';
+import 'package:uuid/uuid.dart';
 
 class LiveRoomPage extends StatefulWidget {
   final String team1;
@@ -159,12 +160,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final List<dynamic> chatArray = data['chat'];
+      print(chatArray); // Debug print to inspect message fields
       setState(() {
         messages = chatArray.map((chatEntry) {
           final String sender = chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
               ? chatEntry['sender']
               : 'Unknown';
           return RoomMessage(
+            id: chatEntry['_id'] ?? chatEntry['id'] ?? const Uuid().v4(),
             name: '@$sender',
             profileImage:
                 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
@@ -186,6 +189,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         messages.insert(
           0,
           RoomMessage(
+            id: data['_id'] ?? data['id'] ?? const Uuid().v4(),
             name: data['sender'] != null && data['sender'].toString().isNotEmpty
                 ? '@${data['sender']}'
                 : '@Unknown',
@@ -426,7 +430,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                     },
                                     onContextMenuTap: (menuItem) {
                                       print('menu item: $menuItem');
-                                      onContextMenuTap(menuItem, message);
+                                      handleContextMenuTap(menuItem, message);
                                     },
                                   );
                                 },
@@ -809,9 +813,29 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     );
   }
 
-  void onContextMenuTap(dynamic menuItem, RoomMessage message) {
-    Navigator.of(context).pop(); // Close the reactions dialog
-    String action = menuItem.toString().toLowerCase();
+  void handleContextMenuTap(dynamic menuItem, RoomMessage message) {
+    print('menuItem: $menuItem');
+    try {
+      print('menuItem.label: \\${menuItem.label}');
+    } catch (e) {
+      print('menuItem.label not found');
+    }
+    try {
+      print('menuItem.title: \\${menuItem.title}');
+    } catch (e) {
+      print('menuItem.title not found');
+    }
+    try {
+      print('menuItem.value: \\${menuItem.value}');
+    } catch (e) {
+      print('menuItem.value not found');
+    }
+    String action;
+    try {
+      action = menuItem.label.toLowerCase();
+    } catch (e) {
+      action = menuItem.toString().toLowerCase();
+    }
     switch (action) {
       case 'reply':
         replyToMessage(message);
@@ -822,6 +846,11 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       case 'report':
         // Handle report
         break;
+      case 'delete':
+        setState(() {
+          messages.removeWhere((m) => m.id == message.id);
+        });
+        break;
     }
   }
 
@@ -830,6 +859,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     if (messageText.isNotEmpty) {
       // Create the new message
       RoomMessage newMessage = RoomMessage(
+        id: const Uuid().v4(),
         name: '@$currentUser',
         profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
         messageContent: messageText,

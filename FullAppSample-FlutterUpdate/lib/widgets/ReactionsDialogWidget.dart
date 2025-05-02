@@ -5,7 +5,7 @@ class ReactionsDialogWidget extends StatelessWidget {
   final String id;
   final Widget messageWidget;
   final Function(String) onReactionTap;
-  final Function(String) onContextMenuTap;
+  final Function(dynamic) onContextMenuTap;
   final Alignment widgetAlignment;
 
   const ReactionsDialogWidget({
@@ -62,6 +62,7 @@ class ReactionsDialogWidget extends StatelessWidget {
                       _buildMenuItem('Reply', Icons.reply, onContextMenuTap),
                       _buildMenuItem('Copy', Icons.copy, onContextMenuTap),
                       _buildMenuItem('Report', Icons.flag, onContextMenuTap),
+                      _buildMenuItem('Delete', Icons.delete, onContextMenuTap, isDelete: true),
                     ],
                   ),
                 ),
@@ -92,19 +93,22 @@ class ReactionsDialogWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(String label, IconData icon, Function(String) onTap) {
+  Widget _buildMenuItem(String label, IconData icon, Function(dynamic) onTap, {bool isDelete = false}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => onTap(label.toLowerCase()),
+        onTap: () {
+          Navigator.of(context).pop();
+          onTap(label.toLowerCase());
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20),
+              Icon(icon, size: 20, color: isDelete ? Colors.red : null),
               const SizedBox(width: 12),
-              Text(label),
+              Text(label, style: isDelete ? TextStyle(color: Colors.red) : null),
             ],
           ),
         ),

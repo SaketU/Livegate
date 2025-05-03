@@ -103,12 +103,19 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
 
             Padding(
               padding: const EdgeInsets.only(
-                  top: 15, right: 8, left: 8, bottom: 15),
+                  top: 5, right: 8, left: 8, bottom: 15),
               child: Text("Always supporting my teams",
                 style: GoogleFonts.inter(fontSize: screenHeight*0.018),
               ),
             ),
+            Text("Instagram: @john_Dav",
+              style: GoogleFonts.inter(fontSize: screenHeight*0.018, fontWeight: FontWeight.w600),
+            ),
 
+
+
+
+            /*
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 21.0),
               child: Container(
@@ -195,6 +202,7 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
                 ),
               ),
             )
+            */
 
             /*
             Container(

@@ -179,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: logIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.blue
+                        ? Color(0xFF007AFF)
                         : Colors.black,
                     padding: EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(

@@ -187,7 +187,7 @@ class _LeaguePreferencePageState extends State<LeaguePreferencePage> {
                   style: ElevatedButton.styleFrom(
                   minimumSize: Size(double.infinity, 48),
                   backgroundColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue
+                    ? Color(0xFF007AFF)
                     : Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

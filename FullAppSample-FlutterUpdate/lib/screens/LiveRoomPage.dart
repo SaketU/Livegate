@@ -571,7 +571,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: _isTyping
-                                    ? Colors.black
+                                    ? Theme.of(context).brightness == Brightness.dark?
+                                    Color(0xFF007AFF)
+                                    :Colors.black
                                     : Theme.of(context).brightness == Brightness.dark
                                         ? Colors.grey.shade800
                                         : Colors.grey[350],
@@ -738,9 +740,11 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                             color: (message.messageType == "receiver"
-                                ? Theme.of(context).colorScheme.primary
+                                ? Theme.of(context).brightness == Brightness.dark?
+                                Color(0xFF2C2C2E)
+                                :Theme.of(context).colorScheme.primary
                                 : Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.blue //or purpleAccent or blue
+                                    ? Color(0xFF007AFF)//or deeppurpleAccent or blue
                                     : Theme.of(context).colorScheme.secondary),
                           ),
                           padding: EdgeInsets.symmetric(
@@ -760,7 +764,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                           Positioned(
                             bottom: -23,
                             left: message.messageType == "receiver" ? 7 : null,
-                            right: message.messageType == "receiver" ? null : 7,
+                            right: message.messageType == "receiver" ? null : 7, //if on right side message.messageType == "receiver" ? null : 7,
                             child: Container(
                               padding: EdgeInsets.all(2),
                               decoration: BoxDecoration(

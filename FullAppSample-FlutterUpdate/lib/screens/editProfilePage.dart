@@ -361,7 +361,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    'Teams',
+                    'Social',
                     style: GoogleFonts.interTight(
                       fontWeight: FontWeight.w500,
                       fontSize: screenHeight * 0.018,
@@ -381,6 +381,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         textAlign: TextAlign.right,
                         decoration: InputDecoration(
                           border: InputBorder.none,
+                          hintText: 'Ex. Instagram: @username',
+                          hintStyle: GoogleFonts.interTight(
+                              fontSize: 15, color: Colors.grey),
                           isDense: true,
                         ),
                       ),

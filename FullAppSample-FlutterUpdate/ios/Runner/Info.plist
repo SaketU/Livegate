@@ -46,5 +46,9 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save pictures to your photo library.</string>
 
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

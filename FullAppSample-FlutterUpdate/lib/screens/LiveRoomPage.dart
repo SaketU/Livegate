@@ -21,6 +21,7 @@ import 'package:flutter_chat_reactions/flutter_chat_reactions.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fullapp/config.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/gestures.dart';  // Add this import
 
 class LiveRoomPage extends StatefulWidget {
   final String team1;
@@ -40,11 +41,13 @@ class LiveRoomPage extends StatefulWidget {
 class _LiveRoomPageState extends State<LiveRoomPage> {
   TextEditingController _controller = TextEditingController();
   ScrollController _scrollController = ScrollController();
+  FocusNode _focusNode = FocusNode();
   bool _isTyping = false;
   bool _showScrollButton = false;
   String currentUser = '@Unknown';
   List<RoomMessage> messages = [];
   RoomMessage? replyingTo;
+  late LongPressGestureRecognizer _longPressRecognizer;  // Add this
 
   void showEmojiBottomSheet({
     required RoomMessage message,
@@ -221,6 +224,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     super.initState();
     _loadCurrentUser();
 
+    _longPressRecognizer = LongPressGestureRecognizer()
+      ..onLongPress = () {};  // Empty callback to override default behavior
+
     _controller.addListener(() {
       setState(() {
         _isTyping = _controller.text.isNotEmpty;
@@ -248,6 +254,8 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
+    _longPressRecognizer.dispose();  // Add this
     // Leave the game room when exiting the LiveRoomPage.
     SocketManager().leaveGame(widget.gameId);
     SocketManager().socket.off('new message');
@@ -283,535 +291,604 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        flexibleSpace: SafeArea(
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: Icon(
-                  CupertinoIcons.back,
-                  size: 30,
-                  color: Theme.of(context).colorScheme.tertiary,
+    return GestureDetector(
+      onTap: () {
+        // Dismiss keyboard when tapping outside text field
+        _focusNode.unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          flexibleSpace: SafeArea(
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    CupertinoIcons.back,
+                    size: 30,
+                    color: Theme.of(context).colorScheme.tertiary,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 3, right: 5),
-                child: Row(
-                  children: [
-                    Text(
-                      widget.team1,
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.018,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                    Text(
-                      ' vs ',
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.018,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                    Text(
-                      widget.team2,
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.018,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Spacer(),
                 Padding(
-                  padding: EdgeInsets.only(right: 18),
-                  child: SvgPicture.asset(
-                    Theme.of(context).brightness == Brightness.dark
-                        ? 'assets/app_logos/LIVEGATE_dark.svg'
-                      : 'assets/app_logos/LIVEGATE_light.svg',
-                  height: screenHeight * 0.022,
-                  colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.tertiary,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-
-              /* //share and report button
-              Padding(
-                padding: EdgeInsets.only(right: 18),
-                child: GestureDetector(
-                  child: SvgPicture.asset(
-                    'assets/report.svg',
-                    colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.tertiary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 18),
-                child: GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      context: context,
-                      builder: (context) => FriendsBottomSheet(),
-                    );
-                  },
-                  child: SvgPicture.asset(
-                    'assets/share.svg',
-                    colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.tertiary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-              ),
-              */
-
-            ],
-          ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Chat messages (Scrollable List)
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: messages.length,
-                  reverse: true,
-                  physics: BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(bottom: 15),
-                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                  itemBuilder: (context, index) {
-                    var message = messages[index];
-                    return GestureDetector(
-                      onLongPress: () {
-                            // navigate with a custom [HeroDialogRoute] to [ReactionsDialogWidget]
-                            Navigator.of(context).push(
-                              HeroDialogRoute(
-                                builder: (context) {
-                                  return ReactionsDialogWidget(
-                                    widgetAlignment: Alignment.topLeft,
-                                    id: message.id, // unique id for message
-                                    messageWidget: buildMessage(message, index), // message widget
-                                    onReactionTap: (reaction) {
-                                      print('reaction: $reaction');
-
-                                      if (reaction == '➕') {
-                                        showEmojiBottomSheet(
-                                          message: message,
-                                        );
-                                        // show emoji picker container
-                                      } else {
-                                        addReactionToMessage(
-                                          message: message,
-                                          reaction: reaction,
-                                        );
-                                        // add reaction to message
-                                      }
-                                    },
-                                    onContextMenuTap: (menuItem) {
-                                      print('menu item: $menuItem');
-                                      handleContextMenuTap(menuItem, message);
-                                    },
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                      onHorizontalDragEnd: (details) {
-                        // Only detect right to left swipes (negative velocity means right to left)
-                        if (details.primaryVelocity! < 0) {
-                          replyToMessage(message);
-                        }
-                      },
-                      child: buildMessage(message, index),
-                    );
-                  },
-                ),
-              ),
-              // Show reply preview if replying to a message
-              if (replyingTo != null)
-                Container(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Color(0Xff242525)
-                      : Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.only(left: 3, right: 5),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Replying to ${replyingTo!.name}',
-                                  style: GoogleFonts.interTight(
-                                    fontSize: 12,
-                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 1),
-                            Text(
-                              replyingTo!.messageContent,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.interTight(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.tertiary,
-                              ),
-                            ),
-                          ],
+                      Text(
+                        widget.team1,
+                        style: GoogleFonts.interTight(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.tertiary,
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.close),
-                        onPressed: cancelReply,
-                        color: Theme.of(context).colorScheme.tertiary,
+                      Text(
+                        ' vs ',
+                        style: GoogleFonts.interTight(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                      ),
+                      Text(
+                        widget.team2,
+                        style: GoogleFonts.interTight(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              // Input Field Section
-              Container(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Color(0Xff242525)
-                    : Colors.white,
-                child: SafeArea(
-                  top: false,
-                  bottom: true,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        SizedBox(width: 15),
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
-                          maxRadius: screenHeight * 0.020,
+                Spacer(),
+                  Padding(
+                    padding: EdgeInsets.only(right: 18),
+                    child: SvgPicture.asset(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? 'assets/app_logos/LIVEGATE_dark.svg'
+                        : 'assets/app_logos/LIVEGATE_light.svg',
+                    height: screenHeight * 0.022,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.tertiary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+
+                /* //share and report button
+                Padding(
+                  padding: EdgeInsets.only(right: 18),
+                  child: GestureDetector(
+                    child: SvgPicture.asset(
+                      'assets/report.svg',
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 18),
+                  child: GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (context) => FriendsBottomSheet(),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      'assets/share.svg',
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                ),
+                */
+
+              ],
+            ),
+          ),
+        ),
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                // Chat messages (Scrollable List)
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: messages.length,
+                    reverse: true,
+                    physics: BouncingScrollPhysics(),
+                    padding: EdgeInsets.only(bottom: 15),
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    itemBuilder: (context, index) {
+                      var message = messages[index];
+                      return RawGestureDetector(
+                        gestures: {
+                          LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+                            () => LongPressGestureRecognizer(),
+                            (LongPressGestureRecognizer instance) {
+                              instance.onLongPress = () {
+                                Navigator.of(context).push(
+                                  HeroDialogRoute(
+                                    builder: (context) {
+                                      return ReactionsDialogWidget(
+                                        widgetAlignment: Alignment.topLeft,
+                                        id: message.id,
+                                        messageWidget: buildMessage(message, index),
+                                        onReactionTap: (reaction) {
+                                          print('reaction: $reaction');
+
+                                          if (reaction == '➕') {
+                                            showEmojiBottomSheet(
+                                              message: message,
+                                            );
+                                          } else {
+                                            addReactionToMessage(
+                                              message: message,
+                                              reaction: reaction,
+                                            );
+                                          }
+                                        },
+                                        onContextMenuTap: (menuItem) {
+                                          print('menu item: $menuItem');
+                                          handleContextMenuTap(menuItem, message);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                );
+                              };
+                            },
+                          ),
+                        },
+                        child: GestureDetector(
+                          onHorizontalDragEnd: (details) {
+                            if (details.primaryVelocity! > 0) {
+                              replyToMessage(message);
+                            }
+                          },
+                          child: buildMessage(message, index),
                         ),
-                        SizedBox(width: 13),
+                      );
+                    },
+                  ),
+                ),
+                // Show reply preview if replying to a message
+                if (replyingTo != null)
+                  Container(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Color(0Xff242525)
+                        : Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
                         Expanded(
-                          child: Container(
-                            constraints: BoxConstraints(
-                              maxHeight: screenHeight * 0.25,
-                            ),
-                            padding: EdgeInsets.symmetric(horizontal: 0),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              borderRadius: BorderRadius.circular(17),
-                            ),
-                            child: TextField(
-                              controller: _controller,
-                              cursorColor: Theme.of(context).colorScheme.tertiary,
-                              minLines: 1,
-                              maxLines: 5,
-                              keyboardType: TextInputType.multiline,
-                              style: TextStyle(fontSize: 14), // You can tweak this
-                              decoration: InputDecoration(
-                                isCollapsed: true, // Minimizes vertical padding
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 8, // Reduce height here
-                                  horizontal: 12,
-                                ),
-                                suffixIconConstraints: BoxConstraints(
-                                  minWidth: 20,
-                                  minHeight: 20,
-                                ),
-                                /*
-                                suffixIcon: Padding(
-                                  padding: const EdgeInsets.only(right: 12.0),
-                                  child: SvgPicture.asset(
-                                    'assets/stickers.svg',
-                                    width: screenWidth * 0.025,
-                                    height: screenHeight * 0.025,
-                                    colorFilter: ColorFilter.mode(
-                                      Theme.of(context).colorScheme.tertiary,
-                                      BlendMode.srcIn,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Replying to ${replyingTo!.name}',
+                                    style: GoogleFonts.interTight(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
                                     ),
                                   ),
-                                ),
-                                */
-                                border: InputBorder.none,
+                                ],
                               ),
-                            ),
+                              SizedBox(height: 1),
+                              Text(
+                                replyingTo!.messageContent,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.interTight(
+                                  fontSize: 14,
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 13),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 18),
-                          child: GestureDetector(
-                            onTap: _isTyping ? _sendMessage : null,
-                            child: Container(
-                              height: screenHeight * 0.040,
-                              width: screenHeight * 0.040,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _isTyping
-                                    ? Theme.of(context).brightness == Brightness.dark?
-                                    Color(0xFF007AFF)
-                                    :Colors.black
-                                    : Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.grey.shade800
-                                        : Colors.grey[350],
-                              ),
-                              child: Icon(
-                                Icons.send,
-                                color: _isTyping
-                                    ? Colors.white
-                                    : Theme.of(context).brightness == Brightness.dark
-                                        ? Colors.white60
-                                        : Colors.white70,
-                                size: screenHeight * 0.020,
-                              ),
-                            ),
-                          ),
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: cancelReply,
+                          color: Theme.of(context).colorScheme.tertiary,
                         ),
                       ],
                     ),
+                  ),
+                // Input Field Section
+                Container(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Color(0Xff242525)
+                      : Colors.white,
+                  child: SafeArea(
+                    top: false,
+                    bottom: true,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          SizedBox(width: 15),
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg'),
+                            maxRadius: screenHeight * 0.020,
+                          ),
+                          SizedBox(width: 13),
+                          Expanded(
+                            child: Container(
+                              constraints: BoxConstraints(
+                                maxHeight: screenHeight * 0.25, //0.25
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 0),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                borderRadius: BorderRadius.circular(17),
+                              ),
+                              child: TextField(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                cursorColor: Theme.of(context).colorScheme.tertiary,
+                                minLines: 1,
+                                maxLines: 5,
+                                keyboardType: TextInputType.multiline,
+                                style: TextStyle(fontSize: 14), // You can tweak this
+                                decoration: InputDecoration(
+                                  isCollapsed: true, // Minimizes vertical padding
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 7, // Reduce height here
+                                    horizontal: 12,
+                                  ),
+                                  suffixIconConstraints: BoxConstraints(
+                                    minWidth: 20,
+                                    minHeight: 20,
+                                  ),
+                                  /*
+                                  suffixIcon: Padding(
+                                    padding: const EdgeInsets.only(right: 12.0),
+                                    child: SvgPicture.asset(
+                                      'assets/stickers.svg',
+                                      width: screenWidth * 0.025,
+                                      height: screenHeight * 0.025,
+                                      colorFilter: ColorFilter.mode(
+                                        Theme.of(context).colorScheme.tertiary,
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ),
+                                  */
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 13),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 18),
+                            child: GestureDetector(
+                              onTap: _isTyping ? _sendMessage : null,
+                              child: Container(
+                                height: screenHeight * 0.040,
+                                width: screenHeight * 0.040,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _isTyping
+                                      ? Theme.of(context).brightness == Brightness.dark?
+                                      Color(0xFF007AFF)
+                                      :Colors.black
+                                      : Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.grey.shade800
+                                          : Colors.grey[350],
+                                ),
+                                child: Icon(
+                                  Icons.send,
+                                  color: _isTyping
+                                      ? Colors.white
+                                      : Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.white60
+                                          : Colors.white70,
+                                  size: screenHeight * 0.020,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Scroll to bottom button
+            if (_showScrollButton)
+              Positioned(
+                right: 20,
+                bottom: 300,
+                child: FloatingActionButton(
+                  mini: true,
+                  elevation: 0,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  onPressed: () {
+                    _scrollController.animateTo(
+                      0.0,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: Icon(
+                    CupertinoIcons.chevron_down_circle,
+                    color: Theme.of(context).colorScheme.tertiary,
+                    size: screenHeight * 0.026,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextWithoutSelection(String text, TextStyle style) {
+    return RichText(
+      text: TextSpan(
+        text: text,
+        style: style,
+        recognizer: TapGestureRecognizer()..onTap = () {},
+      ),
+    );
+  }
+
+  Widget buildMessage(RoomMessage message, int index) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isConsecutiveMessage = index < messages.length - 1 && 
+                              messages[index + 1].name == message.name;
+    bool hasReaction = message.reactions.isNotEmpty;
+    bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name;
+    double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0);
+
+    return GestureDetector(
+      onLongPress: () {
+        Navigator.of(context).push(
+          HeroDialogRoute(
+            builder: (context) {
+              return ReactionsDialogWidget(
+                widgetAlignment: Alignment.topLeft,
+                id: message.id,
+                messageWidget: buildMessage(message, index),
+                onReactionTap: (reaction) {
+                  print('reaction: $reaction');
+
+                  if (reaction == '➕') {
+                    showEmojiBottomSheet(
+                      message: message,
+                    );
+                  } else {
+                    addReactionToMessage(
+                      message: message,
+                      reaction: reaction,
+                    );
+                  }
+                },
+                onContextMenuTap: (menuItem) {
+                  print('menu item: $menuItem');
+                  handleContextMenuTap(menuItem, message);
+                },
+              );
+            },
+          ),
+        );
+      },
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! > 0) {
+          replyToMessage(message);
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.only(
+          top: isConsecutiveMessage ? 2 : 7,
+          bottom: bottomPadding,
+          left: 15,
+          right: 15,
+        ),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isConsecutiveMessage) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: screenHeight * 0.016),
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(message.profileImage),
+                    maxRadius: screenHeight * 0.020,
+                  ),
+                ),
+                SizedBox(width: screenWidth * 0.008),
+              ],
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: isConsecutiveMessage
+                        ? screenHeight * 0.040 + screenWidth * 0.008
+                        : 0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (!isConsecutiveMessage)
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return UsersProfilePage();
+                            }));
+                          },
+                          child: _buildTextWithoutSelection(
+                            message.name,
+                            GoogleFonts.interTight(
+                              fontSize: screenHeight * 0.018,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
+                          ),
+                        ),
+                      if (!isConsecutiveMessage) SizedBox(height: 3),
+
+                      if (message.replyTo != null)
+                        Container(
+                          margin: EdgeInsets.only(bottom: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.arrow_turn_down_right,
+                                    size: 15,
+                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                  ),
+                                  SizedBox(width: 4),
+                                  _buildTextWithoutSelection(
+                                    message.replyToName ?? '',
+                                    GoogleFonts.interTight(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 2),
+                              Padding(
+                                padding: EdgeInsets.only(left: 16),
+                                child: _buildTextWithoutSelection(
+                                  message.replyTo!.messageContent,
+                                  GoogleFonts.interTight(
+                                    fontSize: 12,
+                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),//16
+                              color: (message.messageType == "receiver"
+                                  ? Theme.of(context).brightness == Brightness.dark?
+                                  Color(0xFF2C2C2E)
+                                  :Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).brightness == Brightness.dark
+                                      ? Color(0xFF007AFF)
+                                      : Theme.of(context).colorScheme.secondary),
+                            ),
+                            padding: EdgeInsets.only(
+                                top: screenHeight * 0.0085,  // Reduced from 0.0095
+                                left: 17,
+                                right: 17,
+                                bottom: screenHeight * 0.01), //incresed from 0.0095
+                            child: _buildTextWithoutSelection(
+                              message.messageContent,
+                              GoogleFonts.interTight(
+                                fontSize: screenHeight * 0.018,
+                                color: message.messageType == "receiver"
+                                    ? Theme.of(context).colorScheme.tertiary
+                                    : Theme.of(context).colorScheme.onSecondary,
+                              ),
+                            ),
+                          ),
+
+                          if (hasReaction)
+                            Positioned(
+                              bottom: -21, //25 or 25.5
+                              left: 7,
+                              child: Container(
+                                padding: EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: message.reactions.entries.map((entry) {
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            _buildTextWithoutSelection(
+                                              entry.key,
+                                              TextStyle(
+                                                fontSize: 13,
+                                                height: 1.1,
+                                              ),
+                                            ),
+                                            if (entry.value > 1)
+                                              Padding(
+                                                padding: const EdgeInsets.only(left: 2),
+                                                child: _buildTextWithoutSelection(
+                                                  entry.value.toString(),
+                                                  TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: Colors.grey,
+                                                    height: 1.1,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          // Scroll to bottom button
-          if (_showScrollButton)
-            Positioned(
-              right: 20,
-              bottom: 300,
-              child: FloatingActionButton(
-                mini: true,
-                elevation: 0,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                onPressed: () {
-                  _scrollController.animateTo(
-                    0.0,
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: Icon(
-                  CupertinoIcons.chevron_down_circle,
-                  color: Theme.of(context).colorScheme.tertiary,
-                  size: screenHeight * 0.026,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // Message Bubble Widget
-  Widget buildMessage(RoomMessage message, int index) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
-    bool isConsecutiveMessage = index < messages.length - 1 && 
-                              messages[index + 1].name == message.name; //check if the next message is from the same user
-    bool hasReaction = message.reactions.isNotEmpty; //check if the message has reactions
-    bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name; //check if the message is the last message from the user  
-    double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0); //space between reactions and between messages if it's the last message from the user
-
-    return Container(
-      padding: EdgeInsets.only(
-        top: isConsecutiveMessage ? 2 : 7, //space between messages
-        bottom: bottomPadding,
-        left: 15,
-        right: 15,
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,  // Always align from left
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,  // Change to align from top
-          children: [
-            if (!isConsecutiveMessage) ...[
-              Padding(
-                padding: EdgeInsets.only(top: screenHeight * 0.016),  // Small top padding to align with username
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(message.profileImage),
-                  maxRadius: screenHeight * 0.020,
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.008),
-            ],
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: isConsecutiveMessage
-                      ? screenHeight * 0.040 + screenWidth * 0.008
-                      : 0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (!isConsecutiveMessage)
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return UsersProfilePage();
-                          }));
-                        },
-                        child: Text(
-                          message.name,
-                          style: GoogleFonts.interTight(
-                            fontSize: screenHeight * 0.018,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
-                        ),
-                      ),
-                    if (!isConsecutiveMessage) SizedBox(height: 3),//space between username and message
-
-                    // Reply preview if this is a reply message
-                    if (message.replyTo != null)
-                      Container(
-                        margin: EdgeInsets.only(bottom: 4), //space between reply preview and message
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  CupertinoIcons.arrow_turn_down_right,
-                                  size: 15,
-                                  color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  message.replyToName ?? '',
-                                  style: GoogleFonts.interTight(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 2), //space between arrow and reply message
-                            Padding(
-                              padding: EdgeInsets.only(left: 16),
-                              child: Text(
-                                message.replyTo!.messageContent,
-                                style: GoogleFonts.interTight(
-                                  fontSize: 12,
-                                  color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.8,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: (message.messageType == "receiver"
-                                ? Theme.of(context).brightness == Brightness.dark?
-                                Color(0xFF2C2C2E)
-                                :Theme.of(context).colorScheme.primary
-                                : Theme.of(context).brightness == Brightness.dark
-                                    ? Color(0xFF007AFF)//or deeppurpleAccent or blue
-                                    : Theme.of(context).colorScheme.secondary),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                              vertical: screenHeight * 0.0095, horizontal: 17),
-                          child: Text(
-                            message.messageContent,
-                            style: GoogleFonts.interTight(
-                              fontSize: screenHeight * 0.018,
-                              color: message.messageType == "receiver"
-                                  ? Theme.of(context).colorScheme.tertiary
-                                  : Theme.of(context).colorScheme.onSecondary,
-                            ),
-                          ),
-                        ),
-
-                        if (hasReaction)
-                          Positioned(
-                            bottom: -23,
-                            left: message.messageType == "receiver" ? 7 : null,
-                            right: message.messageType == "receiver" ? null : 7, //if on right side message.messageType == "receiver" ? null : 7,
-                            child: Container(
-                              padding: EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: message.reactions.entries.map((entry) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                                      child: Row(
-                                        children: [
-                                          Text(entry.key, style: TextStyle(fontSize: 13)),
-                                          if (entry.value > 1)
-                                            Padding(
-                                              padding: const EdgeInsets.only(left: 2),
-                                              child: Text(
-                                                entry.value.toString(),
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

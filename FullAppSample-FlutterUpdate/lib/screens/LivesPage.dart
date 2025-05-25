@@ -4,6 +4,7 @@ import 'package:fullapp/models/Rooms.dart';
 import 'package:fullapp/screens/profilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:fullapp/widgets/liveList.dart';
+import 'package:fullapp/widgets/shimmer_loading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/screens/searchPage.dart';
@@ -227,7 +228,9 @@ class _LivesPageState extends State<LivesPage> {
                   future: futureRooms,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                      return Column(
+                        children: List.generate(5, (index) => ShimmerLiveList()),
+                      );
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {

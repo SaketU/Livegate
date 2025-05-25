@@ -70,6 +70,7 @@ dependencies:
   emoji_picker_flutter: ^4.3.0
   file: ^7.0.0
   win32: ^5.0.0
+  shimmer: ^3.0.0
 
 
 dev_dependencies:

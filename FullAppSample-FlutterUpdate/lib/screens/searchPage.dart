@@ -2,6 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fullapp/models/Rooms.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:fullapp/config.dart';
+import 'package:fullapp/widgets/liveList.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -13,6 +18,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
   late Animation<double> _searchBarWidth;
   late Animation<double> _cancelButtonOpacity;
   late Animation<Offset> _cancelButtonSlide;
+  TextEditingController _searchController = TextEditingController();
+  List<Rooms> allRooms = [];
+  List<Rooms> filteredRooms = [];
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -32,11 +41,53 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _controller.forward();
+    _searchController.addListener(_onSearchChanged);
+    _fetchRooms();
+  }
+
+  Future<void> _fetchRooms() async {
+    try {
+      final response = await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(response.body);
+        setState(() {
+          allRooms = jsonData.map((data) => Rooms.fromJson(data)).toList();
+          isLoading = false;
+        });
+        _onSearchChanged(); // Initial filter
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        throw Exception('Failed to load rooms');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error fetching rooms: $e');
+    }
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        filteredRooms = allRooms;
+      } else {
+        filteredRooms = allRooms.where((room) {
+          return room.Team1.toLowerCase().contains(query) ||
+                 room.Team2.toLowerCase().contains(query) ||
+                 room.League.toLowerCase().contains(query);
+        }).toList();
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -67,10 +118,11 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                               child: Container(
                                 height: screenHeight * 0.045,
                                 child: TextField(
+                                  controller: _searchController,
                                   autofocus: true,
                                   cursorColor: Colors.grey,
                                   decoration: InputDecoration(
-                                    hintText: "Search...",
+                                    hintText: "Search...", //Search teams or leagues
                                     hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),
                                     prefixIcon: Padding(
                                       padding: EdgeInsets.all(10),
@@ -109,9 +161,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                     ),
                   ),
                   
-                  // Reduced spacing on the right of "Cancel"
                   Padding(
-                    padding: EdgeInsets.only(right: 4.0, left: screenHeight*0.013), // 👈 This reduces space
+                    padding: EdgeInsets.only(right: 4.0, left: screenHeight*0.013),
                     child: SlideTransition(
                       position: _cancelButtonSlide,
                       child: FadeTransition(
@@ -133,7 +184,41 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               ),
             ),
             Expanded(
-              child: Center(child: Text("Search results appear here...")),
+              child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : filteredRooms.isEmpty
+                  ? Center(
+                      child: Text(
+                        _searchController.text.isEmpty
+                            ? "Search for teams or leagues"
+                            : "No matches found",
+                        style: GoogleFonts.inter(
+                          color: Colors.grey,
+                          fontSize: screenHeight * 0.018,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
+                      itemCount: filteredRooms.length,
+                      itemBuilder: (context, index) {
+                        final room = filteredRooms[index];
+                        return LiveList(
+                          league: room.League,
+                          team1: room.Team1,
+                          team2: room.Team2,
+                          logo1: room.Logo1,
+                          logo2: room.Logo2,
+                          sport: room.Sport,
+                          people: room.People,
+                          remain: room.Remain,
+                          state: room.state,
+                          icon: room.icon,
+                          isLive: room.state.toLowerCase() == 'live now',
+                          gameId: room.gameId,
+                        );
+                      },
+                    ),
             ),
           ],
         ),

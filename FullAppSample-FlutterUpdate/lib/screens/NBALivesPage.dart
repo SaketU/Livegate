@@ -7,21 +7,34 @@ import 'package:fullapp/widgets/liveList.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/screens/searchPage.dart';
+import 'package:fullapp/config.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:fullapp/widgets/shimmer_loading.dart';
 
 class NBALivesPage extends StatefulWidget {
-
   @override
   _NBALivesPageState createState() => _NBALivesPageState();
 }
 
 class _NBALivesPageState extends State<NBALivesPage> {
-  List<Rooms> rooms = [
-    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
-    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "2"),
-    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "3"),
-    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "4"),
+  late Future<List<Rooms>> futureRooms;
 
-  ];
+  @override
+  void initState() {
+    super.initState();
+    futureRooms = fetchNBAGames();
+  }
+
+  Future<List<Rooms>> fetchNBAGames() async {
+    final response = await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = json.decode(response.body);
+      return jsonData.map((data) => Rooms.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load NBA games');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +54,16 @@ class _NBALivesPageState extends State<NBALivesPage> {
                 : Colors.white,
               elevation: 0,
               floating: true,
-              snap: true, // Ensures the AppBar snaps into place when scrolling up
-              pinned: false, // Keeps AppBar visible at the top
-              
+              snap: true,
+              pinned: false,
+              title: Text(
+                'NBA',
+                style: GoogleFonts.interTight(
+                  fontSize: screenHeight * 0.02,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+              ),
               leading: IconButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -107,25 +127,31 @@ class _NBALivesPageState extends State<NBALivesPage> {
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return LiveList(
-                      league: rooms[index].League,
-                      team1: rooms[index].Team1,
-                      team2: rooms[index].Team2,
-                      logo1: rooms[index].Logo1,
-                      logo2: rooms[index].Logo2,
-                      sport: rooms[index].Sport,
-                      people: rooms[index].People,
-                      remain: rooms[index].Remain,
-                      state: rooms[index].state,
-                      icon: rooms[index].icon,
-                      isLive: true,
-                      gameId: rooms[index].gameId,
+              sliver: SliverToBoxAdapter(
+                child: FutureBuilder<List<Rooms>>(
+                  future: futureRooms,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Column(
+                        children: List.generate(5, (index) => ShimmerLiveList()),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No games available.'));
+                    }
+                    
+                    final List<Rooms> rooms = snapshot.data!;
+                    return Column(
+                      children: rooms.map((room) {
+                        return LiveList(
+                          room: room,
+                          isLive: room.getCurrentStatus() == 'Live now',
+                          gameId: room.gameId,
+                        );
+                      }).toList(),
                     );
                   },
-                  childCount: rooms.length,
                 ),
               ),
             ),

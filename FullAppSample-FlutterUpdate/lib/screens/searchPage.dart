@@ -204,17 +204,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                       itemBuilder: (context, index) {
                         final room = filteredRooms[index];
                         return LiveList(
-                          league: room.League,
-                          team1: room.Team1,
-                          team2: room.Team2,
-                          logo1: room.Logo1,
-                          logo2: room.Logo2,
-                          sport: room.Sport,
-                          people: room.People,
-                          remain: room.Remain,
-                          state: room.state,
-                          icon: room.icon,
-                          isLive: room.state.toLowerCase() == 'live now',
+                          room: room,
+                          isLive: room.getCurrentStatus() == 'Live now',
                           gameId: room.gameId,
                         );
                       },

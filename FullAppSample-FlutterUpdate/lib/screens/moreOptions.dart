@@ -228,7 +228,7 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[800]
+                  ? Colors.white10
                   : Colors.grey[200],
             ),
             child: Center(

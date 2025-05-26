@@ -4,35 +4,61 @@ import 'package:fullapp/screens/LiveRoomPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/widgets/friendsBottomSheet.dart';
-//code
-class LiveList extends StatefulWidget{
-  String league;
-  String team1;
-  String team2;
-  String logo1;
-  String logo2;
-  String sport;
-  String people;
-  String remain;
-  String state;
-  IconData icon;
+import 'package:fullapp/models/Rooms.dart';
+import 'dart:async';
 
+class LiveList extends StatefulWidget {
+  final Rooms room;
   bool isLive;
   String gameId;
-  LiveList({required this.league,required this.team1,required this.team2, required this.logo1,required this.logo2,required this.sport,required this.people,required this.remain,required this.state,required this.icon, required this.isLive, required this.gameId});
+
+  LiveList({
+    required this.room,
+    required this.isLive,
+    required this.gameId,
+  });
+
   @override
   _LiveListState createState() => _LiveListState();
 }
 
 class _LiveListState extends State<LiveList> {
+  late Timer _timer;
+  late String _currentStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentStatus = widget.room.getCurrentStatus();
+    // Update status every minute
+    _timer = Timer.periodic(Duration(minutes: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentStatus = widget.room.getCurrentStatus();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+    
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return LiveRoomPage(team1: widget.team1, team2: widget.team2, gameId: widget.gameId);
+          return LiveRoomPage(
+            team1: widget.room.Team1,
+            team2: widget.room.Team2,
+            gameId: widget.gameId
+          );
         }));
       },
       child: Padding(
@@ -40,10 +66,11 @@ class _LiveListState extends State<LiveList> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).brightness == Brightness.dark?
+                          Theme.of(context).colorScheme.primary: Color(0xFFF5F5F5),
           ),
-          height: screenHeight * 0.105,//101
-          width: 386,//386
+          height: screenHeight * 0.105,
+          width: 386,
           padding: EdgeInsets.only(left: 15, right: 26, top: screenHeight * 0.014),
           child: Row(
             children: <Widget>[
@@ -52,7 +79,7 @@ class _LiveListState extends State<LiveList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      widget.league,
+                      widget.room.League,
                       style: GoogleFonts.interTight(
                         fontSize: screenHeight * 0.017,
                         fontWeight: FontWeight.bold,
@@ -64,7 +91,7 @@ class _LiveListState extends State<LiveList> {
                     Row(
                       children: [
                         Text(
-                          widget.team1,
+                          widget.room.Team1,
                           style: GoogleFonts.interTight(
                             fontSize: screenHeight * 0.017,
                             fontWeight: FontWeight.bold,
@@ -72,86 +99,62 @@ class _LiveListState extends State<LiveList> {
                           ),
                         ),
                         Text(
-                      ' vs ',
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.017,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
+                          ' vs ',
+                          style: GoogleFonts.interTight(
+                            fontSize: screenHeight * 0.017,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
                         Text(
-                      widget.team2,
-                      style: GoogleFonts.interTight(
-                        fontSize: screenHeight * 0.017,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
+                          widget.room.Team2,
+                          style: GoogleFonts.interTight(
+                            fontSize: screenHeight * 0.017,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.tertiary,
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.005),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Container(
-                          child: Row(
-                            children: [
-                              if (widget.isLive) ...[
-                                SvgPicture.asset(
-                                  'assets/live-icon.svg',
-                                  width: screenWidth * 0.0145, // Adjust size as needed
-                                  height: screenHeight * 0.010,
-                                  colorFilter: ColorFilter.mode(
-                                  Colors.red,  // Change to any color you need
-                                  BlendMode.srcIn,  // Ensures proper color blending
-                                  ),
-                                  ),
-                                SizedBox(width: 8),
-                              ],
-                              Text(
-                                widget.state,
-                                style: GoogleFonts.interTight(
-                                  fontSize: screenHeight * 0.012,
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).colorScheme.onTertiary,
-                                ),
-                              ),
-                              SizedBox(width: 28),
-                              widget.isLive
-                                  ? Text(
-                                widget.remain,
-                                style: GoogleFonts.interTight(
-                                  fontSize: screenHeight * 0.012,
-                                  fontWeight: FontWeight.w500,
-                                  color: Theme.of(context).colorScheme.onTertiary,
-                                ),
-                              )
-                                  : Icon(
-                                CupertinoIcons.bell,
-                                color: Theme.of(context).colorScheme.onTertiary,
-                                size: screenHeight * 0.016,
-                              ),
-                              SizedBox(width: 28),
-                              IconButton(
-                                padding: EdgeInsets.only(bottom: 1),
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    context: context,
-                                    builder: (context) => FriendsBottomSheet(),
-                                  );
-                                },
-                                icon: Icon(
-                                  CupertinoIcons.paperplane,
-                                  size: screenHeight * 0.016,
-                                  color: Theme.of(context).colorScheme.onTertiary,
-                                ),
-                              ),
-                            ],
+                    Row(
+                      children: [
+                        if (_currentStatus == 'Live now') ...[
+                          Icon(
+                            CupertinoIcons.dot_radiowaves_left_right,
+                            color: Colors.red,
+                            size: screenHeight * 0.02,
+                          ),
+                          SizedBox(width: 5),
+                        ],
+                        Text(
+                          _currentStatus,
+                          style: GoogleFonts.interTight(
+                            fontSize: screenHeight * 0.015,
+                            fontWeight: FontWeight.w500,
+                            color: _currentStatus == 'Live now' ? 
+                            Colors.red : Theme.of(context).colorScheme.onTertiary,
                           ),
                         ),
-                      ),
+                        SizedBox(width: 28),
+                        if (_currentStatus == 'Live now') ...[
+                        Text(
+                                'Chat',
+                                style: GoogleFonts.interTight(
+                                  fontSize: screenHeight * 0.012,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).colorScheme.onTertiary,
+                                ),
+                              ),
+                        ] else ...[
+                          Icon(
+                            CupertinoIcons.bell,
+                            color: Theme.of(context).brightness == Brightness.dark?
+                        Colors.grey.shade400: Colors.grey.shade700,
+                            size: screenHeight * 0.016,
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -168,17 +171,18 @@ class _LiveListState extends State<LiveList> {
                       child: CircleAvatar(
                         radius: screenHeight * 0.022,//20
                         backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                        Colors.white10 : Colors.grey.shade400,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Transform.scale(
-                              scale: 0.8, // Adjust the scale factor to make the image smaller
-                              child: Image.network(//change to svg
-                                widget.logo2,
-                                fit: BoxFit.cover, // Ensures the image covers the area appropriately
-                              ),
-                            )
-                        ),// Adjust color as needed
+                        Colors.white10 : Color(0xFFD9D9D9),
+                        child: Center(
+                          child: Text(
+                            widget.room.team2_abbr,
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark ? 
+                                Colors.white : Colors.black,
+                              fontSize: screenHeight * 0.012,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                     ), //bottom right
                     Positioned(
@@ -193,19 +197,22 @@ class _LiveListState extends State<LiveList> {
                             child: CircleAvatar(
                               radius: screenHeight * 0.021,//19
                               backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                              Colors.white10 : Colors.grey.shade400,
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Transform.scale(
-                                    scale: 0.8, // Adjust the scale factor to make the image smaller
-                                    child: Image.network( //change to svg
-                                      widget.logo1,
-                                      fit: BoxFit.cover, // Ensures the image covers the area appropriately
-                                    ),
-                                  )
-                              ),// Adjust color as needed
+                              Colors.white10 : Color(0xFFD9D9D9)
+,
+                              child: Center(
+                                child: Text(
+                                  widget.room.team1_abbr,
+                                  style: TextStyle(
+                                    color: Theme.of(context).brightness == Brightness.dark ? 
+                                      Colors.white : Colors.black,
+                                    fontSize: screenHeight * 0.012,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
+/*                          
                           SizedBox(width: 5),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -213,7 +220,7 @@ class _LiveListState extends State<LiveList> {
                               Padding(
                                 padding: EdgeInsets.only(bottom: 8), // Move text higher
                                 child: Text(
-                                  widget.people,
+                                  widget.room.Team2,
                                   style: GoogleFonts.interTight(
                                     fontSize: screenHeight * 0.012,
                                     fontWeight: FontWeight.w500,
@@ -223,6 +230,7 @@ class _LiveListState extends State<LiveList> {
                               ),
                             ],
                           ),
+*/
                         ],
                       ),
                     ), // top left
@@ -235,13 +243,13 @@ class _LiveListState extends State<LiveList> {
                         child: CircleAvatar(
                           radius: screenHeight * 0.015,//13
                           backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                          Colors.white10 : Colors.grey.shade400,
+                          Colors.white10 : Color(0xFFD9D9D9),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Transform.scale(
                               scale: 0.8, // Adjust the scale factor to make the image smaller
                               child: SvgPicture.asset( //this change now allows me to display svg, before it was image.network
-                                widget.sport,
+                                widget.room.Sport,
                                 fit: BoxFit.cover,
                                 colorFilter: ColorFilter.mode(
                                 Theme.of(context).colorScheme.tertiary,  // Change to any color you need

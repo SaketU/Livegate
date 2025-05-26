@@ -170,17 +170,38 @@ app.post('/nba-message', async (req, res) => {
 
 app.get('/api/nba-games', async (req, res) => {
   try {
-    const games = await NBAgameLeagues.find({}).sort({ createdAt: -1 }).lean();
-    const formattedGames = games.map(game => ({
-      id: game._id,
-      home_team: game.home_team,
-      away_team: game.away_team,
-      home_team_logo: game.home_team_logo,
-      away_team_logo: game.away_team_logo,
-      venue: game.venue || 'TBD',
-      status: game.status || 'Scheduled',
-    }));
-    console.log('gameId:', formattedGames[0]?.id);
+    const games = await NBAgameLeagues.find({}).sort({ scheduled_time: 1 }).lean();
+    const formattedGames = games.map(game => {
+      const now = new Date();
+      const scheduledTime = new Date(game.scheduled_time);
+      const gameEndTime = new Date(scheduledTime.getTime() + (3 * 60 * 60 * 1000)); // 3 hours after start
+      
+      let currentStatus;
+      if (now < scheduledTime) {
+        currentStatus = 'Scheduled';
+      } else if (now >= scheduledTime && now <= gameEndTime) {
+        currentStatus = 'Live now';
+      } else {
+        currentStatus = 'Finished';
+      }
+
+      return {
+        id: game._id,
+        home_team: game.home_team,
+        away_team: game.away_team,
+        home_team_logo: game.home_team_logo,
+        away_team_logo: game.away_team_logo,
+        venue: game.venue || 'TBD',
+        status: currentStatus,
+        scheduled_time: game.scheduled_time.toISOString(),
+        is_live: currentStatus === 'Live now',
+        league: game.league || 'NBA',
+        sport: game.sport || 'assets/basketball-icon.svg',
+        people: game.people || '1.2k',
+        remain: game.remain || 'Chat'
+      };
+    });
+    
     return res.json(formattedGames);
   } catch (error) {
     console.error('Error retrieving NBA games:', error);

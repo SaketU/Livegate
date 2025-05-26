@@ -237,20 +237,34 @@ class _LivesPageState extends State<LivesPage> {
                       return Center(child: Text('No games available.'));
                     }
                     final List<Rooms> rooms = snapshot.data!;
+                    // Filter to only show live games
+                    final List<Rooms> liveGames = rooms.where((room) => 
+                      room.getCurrentStatus() == 'Live now'
+                    ).toList();
+                    
+                    if (liveGames.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text(
+                              'There are no live games at the moment',
+                              style: GoogleFonts.interTight(
+                                fontSize: 16,
+                                color: Theme.of(context).colorScheme.onTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     return Column(
-                      children: rooms.map((room) {
+                      children: liveGames.map((room) {
                         return LiveList(
-                          league: room.League,
-                          team1: room.Team1,
-                          team2: room.Team2,
-                          logo1: room.Logo1,
-                          logo2: room.Logo2,
-                          sport: room.Sport,
-                          people: room.People,
-                          remain: room.Remain,
-                          state: room.state,
-                          icon: room.icon,
-                          isLive: room.state.toLowerCase() == 'live now',
+                          room: room,
+                          isLive: true,
                           gameId: room.gameId,
                         );
                       }).toList(),

@@ -12,28 +12,41 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fullapp/widgets/shimmer_loading.dart';
 
-class NBALivesPage extends StatefulWidget {
+class LeagueLivesPage extends StatefulWidget {
+  final String league;
+  final String leagueTitle;
+
+  const LeagueLivesPage({
+    Key? key,
+    required this.league,
+    required this.leagueTitle,
+  }) : super(key: key);
+
   @override
-  _NBALivesPageState createState() => _NBALivesPageState();
+  _LeagueLivesPageState createState() => _LeagueLivesPageState();
 }
 
-class _NBALivesPageState extends State<NBALivesPage> {
+class _LeagueLivesPageState extends State<LeagueLivesPage> {
   late Future<List<Rooms>> futureRooms;
 
   @override
   void initState() {
     super.initState();
-    futureRooms = fetchNBAGames();
+    futureRooms = fetchGames();
   }
 
-  Future<List<Rooms>> fetchNBAGames() async {
-    final response = await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      return jsonData.map((data) => Rooms.fromJson(data)).toList();
-    } else {
-      throw Exception('Failed to load NBA games');
+  Future<List<Rooms>> fetchGames() async {
+    // For now, we only have NBA games endpoint
+    if (widget.league == 'NBA') {
+      final response =
+          await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
+      if (response.statusCode == 200) {
+        List<dynamic> jsonData = json.decode(response.body);
+        return jsonData.map((data) => Rooms.fromJson(data)).toList();
+      }
     }
+    // Return empty list for other leagues until their endpoints are implemented
+    return [];
   }
 
   @override
@@ -50,14 +63,14 @@ class _NBALivesPageState extends State<NBALivesPage> {
             // SliverAppBar with floating behavior
             SliverAppBar(
               backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF121212)
-                : Colors.white,
+                  ? Color(0xFF121212)
+                  : Colors.white,
               elevation: 0,
               floating: true,
               snap: true,
               pinned: false,
               title: Text(
-                'NBA',
+                widget.leagueTitle,
                 style: GoogleFonts.interTight(
                   fontSize: screenHeight * 0.02,
                   fontWeight: FontWeight.bold,
@@ -76,54 +89,35 @@ class _NBALivesPageState extends State<NBALivesPage> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
+                  padding: EdgeInsets.only(right: 31),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => SearchPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                    ),
-                  );
-                    },
-                    child: SvgPicture.asset(
-                    'assets/search-icon.svg',
-                    width: screenWidth * 0.027, // Adjust size as needed
-                    height: screenHeight * 0.027,
-                    colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
-                    BlendMode.srcIn,  // Ensures proper color blending
-                      ),
-                    ),
-                  ),
-                ),
-                /*
-                Padding(
-                  padding: const EdgeInsets.only(right: 31.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return ChatsPage();
-                      }));
-                    },
-                    child: SvgPicture.asset(
-                        'assets/chat-icon.svg',
-                        width: screenWidth * 0.027, // Adjust size as needed
-                        height: screenHeight * 0.027,
-                        colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.tertiary,  // Change to any color you need
-                        BlendMode.srcIn,  // Ensures proper color blending
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => SearchPage(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                            return FadeTransition(
+                                opacity: animation, child: child);
+                          },
                         ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      'assets/search-icon.svg',
+                      width: screenWidth * 0.027,
+                      height: screenHeight * 0.027,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary,
+                        BlendMode.srcIn,
                       ),
+                    ),
                   ),
                 ),
-                */
               ],
             ),
-        
+
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
@@ -133,14 +127,23 @@ class _NBALivesPageState extends State<NBALivesPage> {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Column(
-                        children: List.generate(5, (index) => ShimmerLiveList()),
+                        children:
+                            List.generate(5, (index) => ShimmerLiveList()),
                       );
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No games available.'));
+                      return Center(
+                        child: Text(
+                          'No ${widget.leagueTitle} games available.',
+                          style: GoogleFonts.interTight(
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onTertiary,
+                          ),
+                        ),
+                      );
                     }
-                    
+
                     final List<Rooms> rooms = snapshot.data!;
                     return Column(
                       children: rooms.map((room) {

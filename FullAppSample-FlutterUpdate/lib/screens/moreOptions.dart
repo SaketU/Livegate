@@ -8,13 +8,14 @@ import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/screens/NBALivesPage.dart';
+
 //code
 class MoreOptions extends StatefulWidget {
-
   final VoidCallback showLivesPage;
   final VoidCallback showUpcomingPage;
 
-  const MoreOptions({required this.showLivesPage, required this.showUpcomingPage});
+  const MoreOptions(
+      {required this.showLivesPage, required this.showUpcomingPage});
 
   @override
   _MoreOptionsState createState() => _MoreOptionsState();
@@ -30,9 +31,9 @@ class _MoreOptionsState extends State<MoreOptions> {
     Leagues(league: 'NCAAB', leagueLogo: 'assets/sports/dunk.svg'),
     Leagues(league: 'College Baseball', leagueLogo: 'assets/sports/bat.svg'),
     Leagues(league: 'F1', leagueLogo: 'assets/sports/f1_car.svg'),
-    ];
+  ];
 
-@override
+  @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -46,43 +47,50 @@ class _MoreOptionsState extends State<MoreOptions> {
             // SliverAppBar with floating behavior
             SliverAppBar(
               backgroundColor: Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF121212)
-                : Colors.white,
+                  ? Color(0xFF121212)
+                  : Colors.white,
               elevation: 0,
               floating: true,
-              snap: true, // Ensures the AppBar snaps into place when scrolling up
+              snap:
+                  true, // Ensures the AppBar snaps into place when scrolling up
               pinned: false, // Keeps AppBar visible at the top
-              
+
               leading: Padding(
                 padding: EdgeInsets.only(left: 31),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => ProfilePage(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            const begin = Offset(0.0, 1.0); // Start from bottom
-                            const end = Offset.zero; // End at normal position
-                            const curve = Curves.easeInOut;
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            ProfilePage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0); // Start from bottom
+                          const end = Offset.zero; // End at normal position
+                          const curve = Curves.easeInOut;
 
-                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                            var offsetAnimation = animation.drive(tween);
+                          var tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
+                          var offsetAnimation = animation.drive(tween);
 
-                            return SlideTransition(position: offsetAnimation, child: child);
-                          },
-                        ),
-                      );
+                          return SlideTransition(
+                              position: offsetAnimation, child: child);
+                        },
+                      ),
+                    );
                   },
                   child: SvgPicture.asset(
                     'assets/Profile-Icon.svg',
                     width: screenWidth * 0.025, // Adjust size as needed
                     height: screenHeight * 0.025,
                     colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
-                    BlendMode.srcIn,  // Ensures proper color blending
+                      Theme.of(context)
+                          .colorScheme
+                          .tertiary, // Change to any color you need
+                      BlendMode.srcIn, // Ensures proper color blending
                     ),
                   ),
-                  
+
                   /*Icon(
                     size: 28,
                     Icons.account_circle_outlined,
@@ -93,18 +101,18 @@ class _MoreOptionsState extends State<MoreOptions> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
+                  padding: EdgeInsets.only(right: 31), //when chat bubble 20
                   child: GestureDetector(
-                    onTap: () {
-
-                    },
+                    onTap: () {},
                     child: SvgPicture.asset(
-                    'assets/search-icon.svg',
-                    width: screenWidth * 0.027, // Adjust size as needed
-                    height: screenHeight * 0.027,
-                    colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
-                    BlendMode.srcIn,  // Ensures proper color blending
+                      'assets/search-icon.svg',
+                      width: screenWidth * 0.027, // Adjust size as needed
+                      height: screenHeight * 0.027,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context)
+                            .colorScheme
+                            .tertiary, // Change to any color you need
+                        BlendMode.srcIn, // Ensures proper color blending
                       ),
                     ),
                   ),
@@ -130,18 +138,18 @@ class _MoreOptionsState extends State<MoreOptions> {
                   ),
                 ),
                 */
-
               ],
-        
+
               // Add the row as part of the AppBar's bottom
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(50), // Height of the row container
+                preferredSize:
+                    Size.fromHeight(50), // Height of the row container
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 65, vertical: 10),
                   decoration: BoxDecoration(
                     color: Theme.of(context).brightness == Brightness.dark
-                ? Color(0xFF121212)
-                : Colors.white,
+                        ? Color(0xFF121212)
+                        : Colors.white,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -181,7 +189,7 @@ class _MoreOptionsState extends State<MoreOptions> {
                 ),
               ),
             ),
-        
+
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
@@ -208,17 +216,19 @@ class _MoreOptionsState extends State<MoreOptions> {
 }
 
 Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
-  
   double screenHeight = MediaQuery.of(context).size.height;
   double screenWidth = MediaQuery.of(context).size.width;
   return GestureDetector(
     onTap: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return NBALivesPage();
-        }));
+        return LeagueLivesPage(
+          league: leagues.league,
+          leagueTitle: leagues.league,
+        );
+      }));
     },
     child: Padding(
-      padding: EdgeInsets.only(bottom: screenHeight*0.013),
+      padding: EdgeInsets.only(bottom: screenHeight * 0.013),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -234,12 +244,12 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
             child: Center(
               child: SvgPicture.asset(
                 leagues.leagueLogo,
-                width: screenWidth * 0.15,//0.095
+                width: screenWidth * 0.15,
                 height: screenWidth * 0.15,
                 colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
-                    BlendMode.srcIn,  // Ensures proper color blending
-                    ),
+                  Theme.of(context).colorScheme.tertiary,
+                  BlendMode.srcIn,
+                ),
                 fit: BoxFit.fill,
               ),
             ),

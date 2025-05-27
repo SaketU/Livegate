@@ -47,7 +47,26 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   String currentUser = '@Unknown';
   List<RoomMessage> messages = [];
   RoomMessage? replyingTo;
-  late LongPressGestureRecognizer _longPressRecognizer;  // Add this
+  late LongPressGestureRecognizer _longPressRecognizer;
+
+  // Add helper function to detect if text contains only emojis
+  bool isOnlyEmojis(String text) {
+    // This regex pattern matches emoji characters
+    final emojiRegex = RegExp(
+      r'(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|'
+      r'[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|'
+      r'\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|'
+      r'\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|'
+      r'\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|'
+      r'\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|'
+      r'\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|'
+      r'\ud83c[\udf00-\udfff])+',
+    );
+
+    // Remove all emoji characters and check if anything remains
+    String textWithoutEmojis = text.replaceAll(emojiRegex, '').trim();
+    return textWithoutEmojis.isEmpty && emojiRegex.hasMatch(text);
+  }
 
   void showEmojiBottomSheet({
     required RoomMessage message,
@@ -679,6 +698,10 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     bool hasReaction = message.reactions.isNotEmpty;
     bool isLastMessageFromUser = index > 0 && messages[index - 1].name != message.name;
     double bottomPadding = hasReaction ? 25.0 : (isLastMessageFromUser ? 7.0 : 2.0);
+    
+    // Check if message contains only emojis
+    bool onlyEmojis = isOnlyEmojis(message.messageContent);
+    double fontSize = onlyEmojis ? screenHeight * 0.035 : screenHeight * 0.018;
 
     return GestureDetector(
       onLongPress: () {
@@ -832,7 +855,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             child: _buildTextWithoutSelection(
                               message.messageContent,
                               GoogleFonts.interTight(
-                                fontSize: screenHeight * 0.018,
+                                fontSize: fontSize,  // Use dynamic fontSize
                                 color: message.messageType == "receiver"
                                     ? Theme.of(context).colorScheme.tertiary
                                     : Theme.of(context).colorScheme.onSecondary,

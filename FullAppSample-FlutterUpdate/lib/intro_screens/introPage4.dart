@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cupertino_icons/cupertino_icons.dart';
+import 'package:flutter_svg/svg.dart';
 
 class IntroPage4 extends StatelessWidget {
 
@@ -19,16 +20,18 @@ class IntroPage4 extends StatelessWidget {
           children: [
             /// ✅ IMAGE CONTAINER (Centers Image Without Affecting Column Alignment)
             Positioned(
-              top: screenHeight * 0.015,
-              left: (screenWidth - (screenWidth * 0.82)) / 2,
-              child: Container(
-                width: screenWidth * 0.82,
-                height: screenHeight * 0.5053,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  image: DecorationImage(
-                    image: AssetImage("lib/Images App/live-page.png"),
-                    fit: BoxFit.cover,
+              top: screenHeight * 0.15,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: screenWidth * 0.447,
+                  height: screenHeight * 0.149,
+                  child: SvgPicture.asset(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? "assets/app_logos/LG_logo_darkmode.svg"
+                        : 'assets/app_logos/LG_logo_lightmode.svg',
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),

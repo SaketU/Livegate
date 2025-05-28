@@ -2,17 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/Rooms.dart';
 import 'package:fullapp/screens/profilePage.dart';
-import 'package:fullapp/screens/searchPage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:fullapp/widgets/liveList.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fullapp/config.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:fullapp/widgets/shimmer_loading.dart';
-
+//code
 class UpcomingPage extends StatefulWidget {
+
   final VoidCallback showLivesPage;
   final VoidCallback showMoreOptions;
 
@@ -23,27 +19,11 @@ class UpcomingPage extends StatefulWidget {
 }
 
 class _UpcomingPageState extends State<UpcomingPage> {
-  late Future<List<Rooms>> futureRooms;
+  List<Rooms> rooms = [
+    Rooms(League: "NFL", Team1: "Ravens", Team2: "Bengals", Logo1: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Logo2: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg', Sport: '', People :'', Remain: "", state: "Today 7:15pm", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    futureRooms = fetchUpcomingGames();
-  }
-
-  Future<List<Rooms>> fetchUpcomingGames() async {
-    final response = await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = json.decode(response.body);
-      List<Rooms> allGames = jsonData.map((data) => Rooms.fromJson(data)).toList();
-      // Filter for upcoming games only
-      return allGames.where((game) => game.getCurrentStatus() == 'Scheduled').toList();
-    } else {
-      throw Exception('Failed to load upcoming games');
-    }
-  }
-
-  @override
+@override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -63,7 +43,7 @@ class _UpcomingPageState extends State<UpcomingPage> {
               floating: true,
               snap: true, // Ensures the AppBar snaps into place when scrolling up
               pinned: false, // Keeps AppBar visible at the top
-
+              
               leading: Padding(
                 padding: EdgeInsets.only(left: 31),
                 child: GestureDetector(
@@ -107,15 +87,7 @@ class _UpcomingPageState extends State<UpcomingPage> {
                   padding: EdgeInsets.only(right: 31),//when chat bubble 20
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => SearchPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                    ),
-                  );
+
                     },
                     child: SvgPicture.asset(
                     'assets/search-icon.svg',
@@ -175,14 +147,14 @@ class _UpcomingPageState extends State<UpcomingPage> {
                           ),
                         ),
                       ),
-                        Text(
-                          "Upcoming",
-                          style: GoogleFonts.interTight(
-                            fontSize: screenHeight * 0.018,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
+                      Text(
+                        "Upcoming",
+                        style: GoogleFonts.interTight(
+                          fontSize: screenHeight * 0.018,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.tertiary,
                         ),
+                      ),
                       GestureDetector(
                         onTap: widget.showMoreOptions,
                         child: Text(
@@ -199,34 +171,29 @@ class _UpcomingPageState extends State<UpcomingPage> {
                 ),
               ),
             ),
-
+        
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
-              sliver: SliverToBoxAdapter(
-                child: FutureBuilder<List<Rooms>>(
-                  future: futureRooms,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Column(
-                        children: List.generate(5, (index) => ShimmerLiveList()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No games available.'));
-                    }
-                    final List<Rooms> rooms = snapshot.data!;
-                    return Column(
-                      children: rooms.map((room) {
-                        return LiveList(
-                          room: room,
-                          isLive: room.getCurrentStatus() == 'Live now',
-                          gameId: room.gameId,
-                        );
-                      }).toList(),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return LiveList(
+                      league: rooms[index].League,
+                      team1: rooms[index].Team1,
+                      team2: rooms[index].Team2,
+                      logo1: rooms[index].Logo1,
+                      logo2: rooms[index].Logo2,
+                      sport: rooms[index].Sport,
+                      people: rooms[index].People,
+                      remain: rooms[index].Remain,
+                      state: rooms[index].state,
+                      icon: rooms[index].icon,
+                      isLive: (index == false || index == false) ? true : false,
+                      gameId: rooms[index].gameId,
                     );
                   },
+                  childCount: rooms.length,
                 ),
               ),
             ),

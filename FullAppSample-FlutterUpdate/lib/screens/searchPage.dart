@@ -99,132 +99,128 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
       body: SafeArea(
         top: true,
         bottom: false,
-        child: GestureDetector(
-          onTap: () {
-            FocusScope.of(context).unfocus();
-          },
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Hero(
-                        tag: "searchBar",
-                        child: Material(
-                          color: Colors.transparent,
-                          child: AnimatedBuilder(
-                            animation: _searchBarWidth,
-                            builder: (context, child) {
-                              return FractionallySizedBox(
-                                widthFactor: _searchBarWidth.value,
-                                child: Container(
-                                  height: screenHeight * 0.045,
-                                  child: TextField(
-                                    controller: _searchController,
-                                    autofocus: true,
-                                    cursorColor: Colors.grey,
-                                    decoration: InputDecoration(
-                                      hintText: "Search...", //Search teams or leagues
-                                      hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),
-                                      prefixIcon: Padding(
-                                        padding: EdgeInsets.all(10),
-                                        child: SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: SvgPicture.asset(
-                                            'assets/search-icon.svg',
-                                            colorFilter: ColorFilter.mode(
-                                              Colors.grey.shade600,
-                                              BlendMode.srcIn,
-                                            ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Hero(
+                      tag: "searchBar",
+                      child: Material(
+                        color: Colors.transparent,
+                        child: AnimatedBuilder(
+                          animation: _searchBarWidth,
+                          builder: (context, child) {
+                            return FractionallySizedBox(
+                              widthFactor: _searchBarWidth.value,
+                              child: Container(
+                                height: screenHeight * 0.045,
+                                child: TextField(
+                                  controller: _searchController,
+                                  autofocus: true,
+                                  cursorColor: Colors.grey,
+                                  decoration: InputDecoration(
+                                    hintText: "Search...", //Search teams or leagues
+                                    hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),
+                                    prefixIcon: Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: SvgPicture.asset(
+                                          'assets/search-icon.svg',
+                                          colorFilter: ColorFilter.mode(
+                                            Colors.grey.shade600,
+                                            BlendMode.srcIn,
                                           ),
                                         ),
                                       ),
-                                      filled: true,
-                                      fillColor: Theme.of(context).brightness == Brightness.dark
-                                          ? Color(0Xff242525)
-                                          : Colors.black12,
-                                      contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        borderSide: BorderSide(color: Colors.transparent),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        borderSide: BorderSide(color: Colors.black12),
-                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Theme.of(context).brightness == Brightness.dark
+                                        ? Color(0Xff242525)
+                                        : Colors.black12,
+                                    contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(color: Colors.transparent),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(color: Colors.black12),
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                    
-                    Padding(
-                      padding: EdgeInsets.only(right: 4.0, left: screenHeight*0.013),
-                      child: SlideTransition(
-                        position: _cancelButtonSlide,
-                        child: FadeTransition(
-                          opacity: _cancelButtonOpacity,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Text(
-                              "Cancel",
-                              style: GoogleFonts.inter(
-                                fontSize: screenHeight*0.019,
-                                color: Theme.of(context).colorScheme.tertiary,
-                              ),
+                  ),
+                  
+                  Padding(
+                    padding: EdgeInsets.only(right: 4.0, left: screenHeight*0.013),
+                    child: SlideTransition(
+                      position: _cancelButtonSlide,
+                      child: FadeTransition(
+                        opacity: _cancelButtonOpacity,
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Text(
+                            "Cancel",
+                            style: GoogleFonts.inter(
+                              fontSize: screenHeight*0.019,
+                              color: Theme.of(context).colorScheme.tertiary,
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Expanded(
-                child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : filteredRooms.isEmpty
-                    ? Center(
-                        child: Text(
-                          _searchController.text.isEmpty
-                              ? "Search for teams or leagues"
-                              : "No matches found",
-                          style: GoogleFonts.inter(
-                            color: Colors.grey,
-                            fontSize: screenHeight * 0.018,
-                          ),
-                        ),
-                      )
-                    : NotificationListener<ScrollNotification>(
-                        onNotification: (scrollNotification) {
-                          if (scrollNotification is ScrollStartNotification) {
-                            FocusScope.of(context).unfocus();
-                          }
-                          return true;
-                        },
-                        child: ListView.builder(
-                          padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
-                          itemCount: filteredRooms.length,
-                          itemBuilder: (context, index) {
-                            final room = filteredRooms[index];
-                            return LiveList(
-                              room: room,
-                              isLive: room.getCurrentStatus() == 'Live now',
-                              gameId: room.gameId,
-                            );
-                          },
+            ),
+            Expanded(
+              child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : filteredRooms.isEmpty
+                  ? Center(
+                      child: Text(
+                        _searchController.text.isEmpty
+                            ? "Search for teams or leagues"
+                            : "No matches found",
+                        style: GoogleFonts.inter(
+                          color: Colors.grey,
+                          fontSize: screenHeight * 0.018,
                         ),
                       ),
-              ),
-            ],
-          ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
+                      itemCount: filteredRooms.length,
+                      itemBuilder: (context, index) {
+                        final room = filteredRooms[index];
+                        return LiveList(
+                          league: room.League,
+                          team1: room.Team1,
+                          team2: room.Team2,
+                          logo1: room.Logo1,
+                          logo2: room.Logo2,
+                          sport: room.Sport,
+                          people: room.People,
+                          remain: room.Remain,
+                          state: room.state,
+                          icon: room.icon,
+                          isLive: room.state.toLowerCase() == 'live now',
+                          gameId: room.gameId,
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

@@ -7,47 +7,21 @@ import 'package:fullapp/widgets/liveList.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/screens/searchPage.dart';
-import 'package:fullapp/config.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:fullapp/widgets/shimmer_loading.dart';
 
-class LeagueLivesPage extends StatefulWidget {
-  final String league;
-  final String leagueTitle;
-
-  const LeagueLivesPage({
-    Key? key,
-    required this.league,
-    required this.leagueTitle,
-  }) : super(key: key);
+class NBALivesPage extends StatefulWidget {
 
   @override
-  _LeagueLivesPageState createState() => _LeagueLivesPageState();
+  _NBALivesPageState createState() => _NBALivesPageState();
 }
 
-class _LeagueLivesPageState extends State<LeagueLivesPage> {
-  late Future<List<Rooms>> futureRooms;
+class _NBALivesPageState extends State<NBALivesPage> {
+  List<Rooms> rooms = [
+    Rooms(League: "NBA", Team1: "Lakers", Team2: "Warriors", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.2k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "1"),
+    Rooms(League: "NBA", Team1: "Cavaliers", Team2: "Knicks", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "2"),
+    Rooms(League: "NBA", Team1: "Mavericks", Team2: "Bulls", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'570', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "3"),
+    Rooms(League: "NBA", Team1: "Heats", Team2: "Cavaliers", Logo1: '', Logo2: '', Sport: 'assets/basketball-icon.svg', People :'1.4k', Remain: "Chat", state: "Live now", icon: CupertinoIcons.dot_radiowaves_left_right, gameId: "4"),
 
-  @override
-  void initState() {
-    super.initState();
-    futureRooms = fetchGames();
-  }
-
-  Future<List<Rooms>> fetchGames() async {
-    // For now, we only have NBA games endpoint
-    if (widget.league == 'NBA') {
-      final response =
-          await http.get(Uri.parse('$kBackendBaseUrl/api/nba-games'));
-      if (response.statusCode == 200) {
-        List<dynamic> jsonData = json.decode(response.body);
-        return jsonData.map((data) => Rooms.fromJson(data)).toList();
-      }
-    }
-    // Return empty list for other leagues until their endpoints are implemented
-    return [];
-  }
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -63,20 +37,13 @@ class _LeagueLivesPageState extends State<LeagueLivesPage> {
             // SliverAppBar with floating behavior
             SliverAppBar(
               backgroundColor: Theme.of(context).brightness == Brightness.dark
-                  ? Color(0xFF121212)
-                  : Colors.white,
+                ? Color(0xFF121212)
+                : Colors.white,
               elevation: 0,
               floating: true,
-              snap: true,
-              pinned: false,
-              title: Text(
-                widget.leagueTitle,
-                style: GoogleFonts.interTight(
-                  fontSize: screenHeight * 0.02,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-              ),
+              snap: true, // Ensures the AppBar snaps into place when scrolling up
+              pinned: false, // Keeps AppBar visible at the top
+              
               leading: IconButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -89,72 +56,76 @@ class _LeagueLivesPageState extends State<LeagueLivesPage> {
               ),
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 31),
+                  padding: EdgeInsets.only(right: 31),//when chat bubble 20
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => SearchPage(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                                opacity: animation, child: child);
-                          },
-                        ),
-                      );
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => SearchPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
+                  );
                     },
                     child: SvgPicture.asset(
-                      'assets/search-icon.svg',
-                      width: screenWidth * 0.027,
-                      height: screenHeight * 0.027,
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.tertiary,
-                        BlendMode.srcIn,
+                    'assets/search-icon.svg',
+                    width: screenWidth * 0.027, // Adjust size as needed
+                    height: screenHeight * 0.027,
+                    colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.tertiary,  // Change to any color you need
+                    BlendMode.srcIn,  // Ensures proper color blending
                       ),
                     ),
                   ),
                 ),
+                /*
+                Padding(
+                  padding: const EdgeInsets.only(right: 31.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return ChatsPage();
+                      }));
+                    },
+                    child: SvgPicture.asset(
+                        'assets/chat-icon.svg',
+                        width: screenWidth * 0.027, // Adjust size as needed
+                        height: screenHeight * 0.027,
+                        colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.tertiary,  // Change to any color you need
+                        BlendMode.srcIn,  // Ensures proper color blending
+                        ),
+                      ),
+                  ),
+                ),
+                */
               ],
             ),
-
+        
             // SliverList for the main content
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 21, vertical: 17),
-              sliver: SliverToBoxAdapter(
-                child: FutureBuilder<List<Rooms>>(
-                  future: futureRooms,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Column(
-                        children:
-                            List.generate(5, (index) => ShimmerLiveList()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(
-                        child: Text(
-                          'No ${widget.leagueTitle} games available.',
-                          style: GoogleFonts.interTight(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.onTertiary,
-                          ),
-                        ),
-                      );
-                    }
-
-                    final List<Rooms> rooms = snapshot.data!;
-                    return Column(
-                      children: rooms.map((room) {
-                        return LiveList(
-                          room: room,
-                          isLive: room.getCurrentStatus() == 'Live now',
-                          gameId: room.gameId,
-                        );
-                      }).toList(),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return LiveList(
+                      league: rooms[index].League,
+                      team1: rooms[index].Team1,
+                      team2: rooms[index].Team2,
+                      logo1: rooms[index].Logo1,
+                      logo2: rooms[index].Logo2,
+                      sport: rooms[index].Sport,
+                      people: rooms[index].People,
+                      remain: rooms[index].Remain,
+                      state: rooms[index].state,
+                      icon: rooms[index].icon,
+                      isLive: true,
+                      gameId: rooms[index].gameId,
                     );
                   },
+                  childCount: rooms.length,
                 ),
               ),
             ),

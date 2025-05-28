@@ -674,22 +674,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     );
   }
 
-  Widget _buildTappableText(String text, TextStyle style, VoidCallback onTap) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 4.0),
-          child: Text(
-            text,
-            style: style,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget buildMessage(RoomMessage message, int index) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -774,19 +758,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (!isConsecutiveMessage)
-                        _buildTappableText(
-                          message.name,
-                          GoogleFonts.interTight(
-                            fontSize: screenHeight * 0.018,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
-                          () {
+                        GestureDetector(
+                          onTap: () {
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
                               return UsersProfilePage();
                             }));
                           },
+                          child: _buildTextWithoutSelection(
+                            message.name,
+                            GoogleFonts.interTight(
+                              fontSize: screenHeight * 0.018,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
+                          ),
                         ),
                       if (!isConsecutiveMessage) SizedBox(height: 3),
 

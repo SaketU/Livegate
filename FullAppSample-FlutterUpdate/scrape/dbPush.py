@@ -20,28 +20,33 @@ os.makedirs("\\Users\\saket\\livegatebackup\\FullAppSample-FlutterUpdate\\scrape
 with open(json_file_path, "r") as file:
     games = json.load(file)
 
-def insert_games(games):
-    for game in games:
-        try:
-            # Convert scheduled time string to Date object
-            scheduled_time = datetime.strptime(game['scheduled_time'], '%Y-%m-%d %H:%M:%S')
-            
-            game_data = {
-                'home_team': game['home_team'],
-                'away_team': game['away_team'],
-                'home_team_logo': game['home_team_logo'],
-                'away_team_logo': game['away_team_logo'],
-                'venue': game['venue'],
-                'status': 'Scheduled',
-                'scheduled_time': scheduled_time
-            }
-            
-            # Insert into MongoDB
-            collection.insert_one(game_data)
-            print(f"Inserted game: {game['home_team']} vs {game['away_team']}")
-        except Exception as e:
-            print(f"Error inserting game: {str(e)}")
+def delete_all_games():
+    try:
+        result = collection.delete_many({})
+        print(f"Deleted {result.deleted_count} games from the database")
+    except Exception as e:
+        print(f"Error deleting games: {str(e)}")
 
-insert_games(games)
+# Delete all existing games before inserting new ones
+delete_all_games()
+
+for game in games:
+    game_data = {
+        "home_team": game["team1"],
+        "away_team": game["team2"],
+        "home_team_logo": game["team1_logo"],
+        "away_team_logo": game["team2_logo"],
+        # "game_time": datetime.utcnow(), 
+        "venue": "TBD",
+        "status": "Scheduled",
+        "chat": []
+    }
+    collection.update_one(
+        {"home_team": game["team1"], "away_team": game["team2"]},
+        {"$set": game_data},
+        upsert=True
+    )
+
+print(f"Inserted {len(games)} games into the NBA collection.")
 
 client.close()

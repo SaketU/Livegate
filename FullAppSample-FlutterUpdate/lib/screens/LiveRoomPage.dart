@@ -572,7 +572,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                 decoration: InputDecoration(
                                   isCollapsed: true, // Minimizes vertical padding
                                   contentPadding: EdgeInsets.symmetric(
-                                    vertical: 7, // Reduce height here
+                                    vertical: 7, // Reduce height here 7
                                     horizontal: 12,
                                   ),
                                   suffixIconConstraints: BoxConstraints(
@@ -665,11 +665,66 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   Widget _buildTextWithoutSelection(String text, TextStyle style) {
-    return RichText(
-      text: TextSpan(
-        text: text,
+    if (isOnlyEmojis(text)) {
+      return RichText(
+        text: TextSpan(
+          text: text,
+          style: style,
+          recognizer: TapGestureRecognizer()..onTap = () {},
+        ),
+      );
+    }
+
+    // Split text into emoji and non-emoji parts
+    final emojiRegex = RegExp(
+      r'(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|'
+      r'[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|'
+      r'\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|'
+      r'\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|\ud83c[\ude32-\ude3a]|\ud83c[\ude50-\ude51]|'
+      r'\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|'
+      r'\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|'
+      r'\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|'
+      r'\ud83c[\udf00-\udfff])+',
+    );
+
+    List<TextSpan> spans = [];
+    int lastIndex = 0;
+
+    for (Match match in emojiRegex.allMatches(text)) {
+      // Add text before emoji if any
+      if (match.start > lastIndex) {
+        spans.add(TextSpan(
+          text: text.substring(lastIndex, match.start),
+          style: style,
+          recognizer: TapGestureRecognizer()..onTap = () {},
+        ));
+      }
+
+      // Add emoji with larger size
+      spans.add(TextSpan(
+        text: match.group(0),
+        style: style.copyWith(
+          fontSize: (style.fontSize ?? 14) * 1.15, // Make emojis only 15% bigger than surrounding text
+          height: 1.0, // Force consistent line height
+        ),
+        recognizer: TapGestureRecognizer()..onTap = () {},
+      ));
+
+      lastIndex = match.end;
+    }
+
+    // Add remaining text if any
+    if (lastIndex < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastIndex),
         style: style,
         recognizer: TapGestureRecognizer()..onTap = () {},
+      ));
+    }
+
+    return RichText(
+      text: TextSpan(
+        children: spans,
       ),
     );
   }
@@ -685,7 +740,10 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     
     // Check if message contains only emojis
     bool onlyEmojis = isOnlyEmojis(message.messageContent);
-    double fontSize = onlyEmojis ? screenHeight * 0.035 : screenHeight * 0.018;
+    bool isSingleEmoji = onlyEmojis && message.messageContent.characters.length == 1;
+    double fontSize = isSingleEmoji 
+        ? screenHeight * 0.045  // Bigger size for single emoji
+        : (onlyEmojis ? screenHeight * 0.035 : screenHeight * 0.018);  // Original sizes for multiple emojis or text
 
     return GestureDetector(
       onLongPress: () {
@@ -739,10 +797,18 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               if (!isConsecutiveMessage) ...[
                 Padding(
                   padding: EdgeInsets.only(top: screenHeight * 0.016),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return UsersProfilePage();
+                      }));
+                    },
                   child: CircleAvatar(
                     backgroundImage: NetworkImage(message.profileImage),
                     maxRadius: screenHeight * 0.020,
                   ),
+                ),
                 ),
                 SizedBox(width: screenWidth * 0.008),
               ],
@@ -758,19 +824,24 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (!isConsecutiveMessage)
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return UsersProfilePage();
-                            }));
-                          },
-                          child: _buildTextWithoutSelection(
-                            message.name,
-                            GoogleFonts.interTight(
-                              fontSize: screenHeight * 0.018,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.tertiary,
+                        Container(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
+                                  return UsersProfilePage();
+                                }));
+                              },
+                              child: Text(
+                                message.name,
+                                style: GoogleFonts.interTight(
+                                  fontSize: screenHeight * 0.018,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -824,8 +895,8 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                               maxWidth: MediaQuery.of(context).size.width * 0.8,
                             ),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),//16
-                              color: (message.messageType == "receiver"
+                              borderRadius: BorderRadius.circular(14),
+                              color: (onlyEmojis && message.messageContent.characters.length == 1) ? Colors.transparent : (message.messageType == "receiver"
                                   ? Theme.of(context).brightness == Brightness.dark?
                                   Color(0xFF2C2C2E)
                                   :Theme.of(context).colorScheme.primary
@@ -833,25 +904,37 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                       ? Color(0xFF007AFF)
                                       : Theme.of(context).colorScheme.secondary),
                             ),
-                            padding: EdgeInsets.only(
-                                top: screenHeight * 0.0085,  // Reduced from 0.0095
-                                left: 17,
-                                right: 17,
-                                bottom: screenHeight * 0.01), //incresed from 0.0095
-                            child: _buildTextWithoutSelection(
-                              message.messageContent,
-                              GoogleFonts.interTight(
-                                fontSize: fontSize,  // Use dynamic fontSize
-                                color: message.messageType == "receiver"
-                                    ? Theme.of(context).colorScheme.tertiary
-                                    : Theme.of(context).colorScheme.onSecondary,
-                              ),
+                            padding: (onlyEmojis && message.messageContent.characters.length == 1) 
+                              ? EdgeInsets.zero
+                              : EdgeInsets.only(
+                                  top: screenHeight * 0.0085,
+                                  left: 17,
+                                  right: 17,
+                                  bottom: screenHeight * 0.01),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center, // Center vertically
+                              children: [
+                                _buildTextWithoutSelection(
+                                  message.messageContent,
+                                  GoogleFonts.interTight(
+                                    fontSize: fontSize,
+                                    height: 1.3, // Add consistent line height for text
+                                    color: (onlyEmojis && message.messageContent.characters.length == 1) 
+                                      ? Theme.of(context).colorScheme.tertiary
+                                      : (message.messageType == "receiver"
+                                          ? Theme.of(context).colorScheme.tertiary
+                                          : Theme.of(context).colorScheme.onSecondary),
+                                    letterSpacing: onlyEmojis ? 8.0 : 0.0,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 
                           if (hasReaction)
                             Positioned(
-                              bottom: -21, //25 or 25.5
+                              bottom: -21,
                               left: 7,
                               child: Container(
                                 padding: EdgeInsets.all(2),
@@ -860,7 +943,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                                  padding: EdgeInsets.symmetric(horizontal: 3, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: Theme.of(context).colorScheme.primary,
                                     borderRadius: BorderRadius.circular(15),
@@ -870,22 +953,26 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: message.reactions.entries.map((entry) {
-                                      return Padding(
+                                      return Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 3),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            _buildTextWithoutSelection(
-                                              entry.key,
-                                              TextStyle(
-                                                fontSize: 13,
-                                                height: 1.1,
+                                            Container(
+                                              alignment: Alignment.center,
+                                              child: _buildTextWithoutSelection(
+                                                entry.key,
+                                                TextStyle(
+                                                  fontSize: 13,
+                                                  height: 1.1,
+                                                ),
                                               ),
                                             ),
                                             if (entry.value > 1)
-                                              Padding(
+                                              Container(
                                                 padding: const EdgeInsets.only(left: 2),
+                                                alignment: Alignment.center,
                                                 child: _buildTextWithoutSelection(
                                                   entry.value.toString(),
                                                   TextStyle(

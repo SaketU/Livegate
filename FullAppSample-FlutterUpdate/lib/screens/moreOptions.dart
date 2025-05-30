@@ -221,10 +221,7 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
   return GestureDetector(
     onTap: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return LeagueLivesPage(
-          league: leagues.league,
-          leagueTitle: leagues.league,
-        );
+        return NBALivesPage();
       }));
     },
     child: Padding(
@@ -238,7 +235,7 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.grey[800]
+                  ? Colors.white10
                   : Colors.grey[200],
             ),
             child: Center(

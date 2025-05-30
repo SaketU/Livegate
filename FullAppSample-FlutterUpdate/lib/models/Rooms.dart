@@ -27,15 +27,40 @@ class Rooms {
     required this.gameId,
   });
 
+  // Helper method to get sport icon based on league
+  static String getSportIconForLeague(String league) {
+    switch (league.toUpperCase()) {
+      case 'NBA':
+      return 'assets/sports/basketball.svg';
+      case 'NCAAB':
+        return 'assets/sports/dunk.svg';
+      case 'NFL':
+      return 'assets/sports/football.svg';
+      case 'NCAAF':
+        return 'assets/sports/football_run.svg';
+      case 'MLB':
+      return 'assets/sports/baseball.svg';
+      case 'COLLEGE BASEBALL':
+        return 'assets/sports/bat.svg';
+      case 'NHL':
+        return 'assets/sports/hockey.svg';
+      case 'F1':
+        return 'assets/sports/f1_car.svg';
+      default:
+        return 'assets/sports/basketball.svg'; // Default to basketball if unknown
+    }
+  }
 
   factory Rooms.fromJson(Map<String, dynamic> json) {
+    final league = json['league'] ?? 'NBA';
+    
     return Rooms(
-      League: json['league'] ?? 'NBA', 
+      League: league,
       Team1: json['home_team'] ?? '',
       Team2: json['away_team'] ?? '',
       Logo1: json['home_team_logo'] ?? '',
       Logo2: json['away_team_logo'] ?? '',
-      Sport: json['sport'] ?? '',
+      Sport: getSportIconForLeague(league),
       People: json['people'] ?? '',
       Remain: json['remain'] ?? 'TBD',
       state: json['status'] ?? 'Scheduled',

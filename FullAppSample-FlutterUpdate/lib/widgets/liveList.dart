@@ -4,6 +4,7 @@ import 'package:fullapp/screens/LiveRoomPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fullapp/widgets/friendsBottomSheet.dart';
+import 'dart:math';
 //code
 class LiveList extends StatefulWidget{
   String league;
@@ -25,6 +26,43 @@ class LiveList extends StatefulWidget{
 }
 
 class _LiveListState extends State<LiveList> {
+  // Function to get team abbreviation
+  String getTeamAbbreviation(String teamName) {
+    final Map<String, String> nbaTeams = {
+      "Celtics": "BOS",
+      "Nets": "BKN",
+      "Knicks": "NYK",
+      "76ers": "PHI",
+      "Raptors": "TOR",
+      "Bulls": "CHI",
+      "Cavaliers": "CLE",
+      "Pistons": "DET",
+      "Pacers": "IND",
+      "Bucks": "MIL",
+      "Hawks": "ATL",
+      "Hornets": "CHA",
+      "Heat": "MIA",
+      "Magic": "ORL",
+      "Wizards": "WAS",
+      "Nuggets": "DEN",
+      "Timberwolves": "MIN",
+      "Thunder": "OKC",
+      "Trail Blazers": "POR",
+      "Jazz": "UTA",
+      "Warriors": "GSW",
+      "Clippers": "LAC",
+      "Lakers": "LAL",
+      "Suns": "PHX",
+      "Kings": "SAC",
+      "Mavericks": "DAL",
+      "Rockets": "HOU",
+      "Grizzlies": "MEM",
+      "Pelicans": "NOP",
+      "Spurs": "SAS",
+    };
+    return nbaTeams[teamName] ?? teamName.substring(0, min(3, teamName.length)).toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -40,7 +78,8 @@ class _LiveListState extends State<LiveList> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Theme.of(context).colorScheme.primary,
+            color: Theme.of(context).brightness == Brightness.dark?
+                        Theme.of(context).colorScheme.primary : Color(0xFFF5F5F5),
           ),
           height: screenHeight * 0.105,//101
           width: 386,//386
@@ -168,17 +207,17 @@ class _LiveListState extends State<LiveList> {
                       child: CircleAvatar(
                         radius: screenHeight * 0.022,//20
                         backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                        Colors.white10 : Colors.grey.shade400,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Transform.scale(
-                              scale: 0.8, // Adjust the scale factor to make the image smaller
-                              child: Image.network(//change to svg
-                                widget.logo2,
-                                fit: BoxFit.cover, // Ensures the image covers the area appropriately
-                              ),
-                            )
-                        ),// Adjust color as needed
+                        Colors.white10 : Color(0xFFD9D9D9),
+                        child: Center(
+                          child: Text(
+                            getTeamAbbreviation(widget.team2),
+                            style: GoogleFonts.interTight(
+                              fontSize: screenHeight * 0.012,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
+                          ),
+                        ),
                       ),
                     ), //bottom right
                     Positioned(
@@ -193,19 +232,20 @@ class _LiveListState extends State<LiveList> {
                             child: CircleAvatar(
                               radius: screenHeight * 0.021,//19
                               backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                              Colors.white10 : Colors.grey.shade400,
-                              child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Transform.scale(
-                                    scale: 0.8, // Adjust the scale factor to make the image smaller
-                                    child: Image.network( //change to svg
-                                      widget.logo1,
-                                      fit: BoxFit.cover, // Ensures the image covers the area appropriately
-                                    ),
-                                  )
-                              ),// Adjust color as needed
+                              Colors.white10 : Color(0xFFD9D9D9),
+                              child: Center(
+                                child: Text(
+                                  getTeamAbbreviation(widget.team1),
+                                  style: GoogleFonts.interTight(
+                                    fontSize: screenHeight * 0.012,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).colorScheme.tertiary,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
+/*
                           SizedBox(width: 5),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -223,6 +263,7 @@ class _LiveListState extends State<LiveList> {
                               ),
                             ],
                           ),
+*/
                         ],
                       ),
                     ), // top left
@@ -235,7 +276,7 @@ class _LiveListState extends State<LiveList> {
                         child: CircleAvatar(
                           radius: screenHeight * 0.015,//13
                           backgroundColor: Theme.of(context).brightness == Brightness.dark?
-                          Colors.white10 : Colors.grey.shade400,
+                          Colors.white10 : Color(0xFFD9D9D9),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Transform.scale(

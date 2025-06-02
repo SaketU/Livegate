@@ -1,4 +1,4 @@
-package com.example.fullapp
+package com.livegate.app
 
 import io.flutter.embedding.android.FlutterActivity
 

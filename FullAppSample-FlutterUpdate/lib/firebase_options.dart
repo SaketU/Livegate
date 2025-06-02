@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '683048404022',
     projectId: 'full-app-project',
     storageBucket: 'full-app-project.appspot.com',
-    iosBundleId: 'com.example.fullapp',
+    iosBundleId: 'com.livegate.app',
   );
 }

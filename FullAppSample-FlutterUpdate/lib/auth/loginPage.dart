@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   
                   // Sign up section with adaptive spacing
-                  SizedBox(height: viewInsets > 0 ? screenHeight * 0.03 : screenHeight * 0.05),
+                  SizedBox(height: viewInsets > 0 ? screenHeight * 0.03 : screenHeight * 0.099),
                   Padding(
                     padding: EdgeInsets.only(
                       bottom: viewInsets > 0 ? viewInsets : 20,

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Add this import for haptic feedback
 import 'package:flutter_chat_reactions/utilities/hero_dialog_route.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:fullapp/models/roomChatModel.dart';
@@ -159,6 +160,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   required RoomMessage message,
   required String reaction,
 }) {
+  HapticFeedback.mediumImpact(); // Add haptic feedback when adding reaction
   if (message.reactions.containsKey(reaction)) {
     message.reactions[reaction] = message.reactions[reaction]! + 1;
   } else {
@@ -250,6 +252,26 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       setState(() {
         _isTyping = _controller.text.isNotEmpty;
       });
+      
+      // Check if the last character is a period and there's text after it
+      String text = _controller.text;
+      if (text.isNotEmpty) {
+        int lastPeriodIndex = text.lastIndexOf('.');
+        if (lastPeriodIndex != -1 && lastPeriodIndex < text.length - 1) {
+          // If the character after the period is not capitalized, capitalize it
+          if (text[lastPeriodIndex + 1] == ' ' && 
+              lastPeriodIndex + 2 < text.length &&
+              text[lastPeriodIndex + 2].toLowerCase() == text[lastPeriodIndex + 2]) {
+            String newText = text.substring(0, lastPeriodIndex + 2) +
+                text[lastPeriodIndex + 2].toUpperCase() +
+                text.substring(lastPeriodIndex + 3);
+            _controller.value = TextEditingValue(
+              text: newText,
+              selection: TextSelection.collapsed(offset: _controller.selection.baseOffset),
+            );
+          }
+        }
+      }
     });
 
     _scrollController.addListener(() {
@@ -440,6 +462,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             () => LongPressGestureRecognizer(),
                             (LongPressGestureRecognizer instance) {
                               instance.onLongPress = () {
+                                HapticFeedback.heavyImpact(); // Add haptic feedback for long press
                                 Navigator.of(context).push(
                                   HeroDialogRoute(
                                     builder: (context) {
@@ -567,8 +590,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                 cursorColor: Theme.of(context).colorScheme.tertiary,
                                 minLines: 1,
                                 maxLines: 5,
-                                keyboardType: TextInputType.multiline,
-                                style: TextStyle(fontSize: 14), // You can tweak this
+                                textCapitalization: TextCapitalization.sentences,
+                                keyboardType: TextInputType.text,
+                                style: TextStyle(fontSize: 14),
                                 decoration: InputDecoration(
                                   isCollapsed: true, // Minimizes vertical padding
                                   contentPadding: EdgeInsets.symmetric(
@@ -747,6 +771,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
     return GestureDetector(
       onLongPress: () {
+        HapticFeedback.heavyImpact(); // Add haptic feedback for long press
         Navigator.of(context).push(
           HeroDialogRoute(
             builder: (context) {
@@ -964,7 +989,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                               child: _buildTextWithoutSelection(
                                                 entry.key,
                                                 TextStyle(
-                                                  fontSize: 13,
+                                                  fontSize: 15,
                                                   height: 1.1,
                                                 ),
                                               ),

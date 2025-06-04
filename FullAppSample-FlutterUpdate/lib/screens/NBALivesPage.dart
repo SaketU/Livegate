@@ -43,6 +43,7 @@ class _NBALivesPageState extends State<NBALivesPage> {
               floating: true,
               snap: true, // Ensures the AppBar snaps into place when scrolling up
               pinned: false, // Keeps AppBar visible at the top
+              title: Text('NBA',style: GoogleFonts.interTight(color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.bold, fontSize: screenHeight*0.021),),
               
               leading: IconButton(
                 onPressed: () {

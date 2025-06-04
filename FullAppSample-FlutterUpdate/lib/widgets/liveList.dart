@@ -170,6 +170,7 @@ class _LiveListState extends State<LiveList> {
                                 color: Theme.of(context).colorScheme.onTertiary,
                                 size: screenHeight * 0.016,
                               ),
+/* Don't delete this, it's for the share button
                               SizedBox(width: 28),
                               IconButton(
                                 padding: EdgeInsets.only(bottom: 1),
@@ -187,6 +188,7 @@ class _LiveListState extends State<LiveList> {
                                   color: Theme.of(context).colorScheme.onTertiary,
                                 ),
                               ),
+*/
                             ],
                           ),
                         ),

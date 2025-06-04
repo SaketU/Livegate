@@ -127,6 +127,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                                     controller: _searchController,
                                     autofocus: true,
                                     cursorColor: Colors.grey,
+                                    textCapitalization: TextCapitalization.sentences,
+                                    keyboardType: TextInputType.text,
                                     decoration: InputDecoration(
                                       hintText: "Search...", //Search teams or leagues
                                       hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),

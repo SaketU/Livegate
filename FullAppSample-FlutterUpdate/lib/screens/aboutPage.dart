@@ -39,7 +39,7 @@ class _AboutPageState extends State<AboutPage> {
               style: GoogleFonts.interTight(fontSize: screenHeight*0.018, color: Theme.of(context).colorScheme.tertiary, fontWeight: FontWeight.w500, height: 1.4),
               children: [
                 TextSpan(text: 'Privacy Policy\n\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.024)),
-                TextSpan(text: 'Effective Date: [Insert Date]\n\n'),
+                TextSpan(text: 'Effective Date: June 2, 2025\n\n'),
                 
                 
                 TextSpan(text: 'We at Livegate want you to understand what information we collect, and how we use and share it. Your privacy is important to us, which is why we encourage you to read our Privacy Policy. This helps us provide the best experience possible for you.\n\n'),
@@ -52,7 +52,7 @@ class _AboutPageState extends State<AboutPage> {
                 TextSpan(text: '• User-Provided Information: ', style: GoogleFonts.interTight(fontWeight: FontWeight.bold)),
                 TextSpan(text: 'When you create an account, we collect your name, email or phone number, username, profile picture, preferences and any other details you provide.\n'),
                 TextSpan(text: '• In-App Activity: ', style: GoogleFonts.interTight(fontWeight: FontWeight.bold)),
-                TextSpan(text: 'We collect data related to your interactions within the app. This includes  live chats joined, duration of engagement, number of interactions, reactions, and page engagement.\n'),
+                TextSpan(text: 'We collect data related to your interactions within the app. This includes  live chats joined and page engagement.\n'), //duration of engagement, number of interactions, reactions
                 TextSpan(text: '• Device Information: ', style: GoogleFonts.interTight(fontWeight: FontWeight.bold)),
                 TextSpan(text: 'We may collect technical information about your device, such as app version and performance metrics, to enhance user experience.\n\n'),
                 
@@ -93,7 +93,7 @@ class _AboutPageState extends State<AboutPage> {
                 
                 TextSpan(text: 'Contact Us\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.021)),
                 WidgetSpan(child: SizedBox(height: 30),),
-                TextSpan(text: 'If you have any questions about this Privacy Policy, you can contact us at [Insert Contact Information].\n'),
+                TextSpan(text: 'If you have any questions about this Privacy Policy, you can contact us at adolfo.livegate@gmail.com.\n'),
               ],
             ),
           ),

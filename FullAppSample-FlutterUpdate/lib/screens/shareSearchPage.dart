@@ -118,6 +118,9 @@ class _ShareSearchPageState extends State<ShareSearchPage> with SingleTickerProv
                                 child: TextField(
                                   autofocus: true,
                                   cursorColor: Colors.grey,
+                                  textCapitalization: TextCapitalization.sentences,
+                                  keyboardType: TextInputType.text,
+                                  onChanged: _filterFriends,
                                   decoration: InputDecoration(
                                     hintText: "Search...",
                                     hintStyle: GoogleFonts.interTight(color: Colors.grey.shade600),

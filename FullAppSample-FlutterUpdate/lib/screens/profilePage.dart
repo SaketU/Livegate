@@ -250,7 +250,7 @@ class _ProfilePageState extends State<ProfilePage> {
               padding:
                   const EdgeInsets.only(top: 14, right: 8, left: 8, bottom: 15),
               child: Text(
-                "Living life and seeing new things",
+                "Your bio will be displayed here",
                 style: GoogleFonts.interTight(fontSize: screenHeight * 0.018),
               ),
             ),

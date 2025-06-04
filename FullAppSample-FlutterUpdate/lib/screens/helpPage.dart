@@ -83,7 +83,7 @@ class _HelpPageState extends State<HelpPage> {
             TextSpan(text: 'Contact Support\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold, fontSize: screenHeight*0.021)),
             WidgetSpan(child: SizedBox(height: 30),),
             TextSpan(text: 'If you need further assistance, reach out to our support team:\n\n'),
-            TextSpan(text: '• Email: support@yourapp.com\n\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold)),
+            TextSpan(text: '• Email: adolfo.livegate@gmail.com\n\n', style: GoogleFonts.interTight(fontWeight: FontWeight.bold)),
           
             
             TextSpan(text: 'We’re here to help!\n'),

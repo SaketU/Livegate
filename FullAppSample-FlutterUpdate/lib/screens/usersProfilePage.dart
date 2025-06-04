@@ -28,7 +28,7 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
   ];
 
   final profileImage =
-      'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg'
+      'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h4fDB8fHxlbnwwfHx8fA%3D%3D&w=1000&q=80'
   ;
 
   //this is the feed profile page another user would see
@@ -89,14 +89,14 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('John Daver', style: GoogleFonts.inter(
+                Text('User Name', style: GoogleFonts.inter(
                     fontWeight: FontWeight.bold, fontSize: screenHeight*0.018)),
               ],
             ),
 
             SizedBox(height: screenHeight*0.00355,),
 
-            Text('49rs • Bulls • LSU', style: GoogleFonts.inter(color: Theme
+            Text('Team • Team • Team', style: GoogleFonts.inter(color: Theme
                 .of(context)
                 .colorScheme
                 .onTertiary, fontSize: screenHeight*0.018),),
@@ -104,11 +104,11 @@ class _UsersProfilePageState extends State<UsersProfilePage> {
             Padding(
               padding: const EdgeInsets.only(
                   top: 5, right: 8, left: 8, bottom: 15),
-              child: Text("Always supporting my teams",
+              child: Text("Bio will be displayed here",
                 style: GoogleFonts.inter(fontSize: screenHeight*0.018),
               ),
             ),
-            Text("Instagram: @john_Dav",
+            Text("instagram, snap, etc...",
               style: GoogleFonts.inter(fontSize: screenHeight*0.018, fontWeight: FontWeight.w600),
             ),
 

@@ -157,17 +157,28 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
   // add reaction to message
   void addReactionToMessage({
-  required RoomMessage message,
-  required String reaction,
-}) {
-  HapticFeedback.mediumImpact(); // Add haptic feedback when adding reaction
-  if (message.reactions.containsKey(reaction)) {
-    message.reactions[reaction] = message.reactions[reaction]! + 1;
-  } else {
-    message.reactions[reaction] = 1;
+    required RoomMessage message,
+    required String reaction,
+  }) {
+    HapticFeedback.mediumImpact();
+    
+    // Update local state
+    if (message.reactions.containsKey(reaction)) {
+      message.reactions[reaction] = message.reactions[reaction]! + 1;
+    } else {
+      message.reactions[reaction] = 1;
+    }
+    setState(() {});
+
+    // Send reaction to backend through socket
+    SocketManager().socket.emit('send message', {
+      "type": "reaction",
+      "message_id": message.id,
+      "reaction": reaction,
+      "gameId": widget.gameId,
+      "sender": currentUser
+    });
   }
-  setState(() {});
-}
   
 
   Future<void> _loadCurrentUser() async {
@@ -184,22 +195,44 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final List<dynamic> chatArray = data['chat'];
-      print(chatArray); // Debug print to inspect message fields
+      print(chatArray);
       setState(() {
-        messages = chatArray.map((chatEntry) {
-          final String sender = chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
-              ? chatEntry['sender']
-              : 'Unknown';
-          return RoomMessage(
-            id: chatEntry['_id'] ?? chatEntry['id'] ?? const Uuid().v4(),
-            name: '@$sender',
-            profileImage:
-                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-            messageContent: chatEntry['message'] ?? '',
-            messageType: sender == currentUser ? 'sender' : 'receiver',
-            selected: true,
-          );
-        }).toList().reversed.toList();
+        messages = chatArray
+          .where((chatEntry) => !(chatEntry['is_deleted'] ?? false))
+          .map((chatEntry) {
+            final String sender = chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
+                ? chatEntry['sender']
+                : 'Unknown';
+            
+            // Handle reply data if present
+            RoomMessage? replyTo;
+            String? replyToName;
+            if (chatEntry['reply_to'] != null) {
+              var replyData = chatEntry['reply_details'];
+              if (replyData != null) {
+                replyTo = RoomMessage(
+                  id: chatEntry['reply_to'],
+                  name: '@${replyData['original_sender']}',
+                  messageContent: replyData['original_message'],
+                  messageType: 'receiver',
+                  profileImage: replyData['profile_image'] ?? 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+                );
+                replyToName = '@${replyData['original_sender']}';
+              }
+            }
+
+            return RoomMessage(
+              id: chatEntry['_id'] ?? chatEntry['id'] ?? const Uuid().v4(),
+              name: '@$sender',
+              profileImage: chatEntry['profile_image'] ?? 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: chatEntry['message'] ?? '',
+              messageType: sender == currentUser ? 'sender' : 'receiver',
+              selected: true,
+              reactions: Map<String, int>.from(chatEntry['reactions'] ?? {}),
+              replyTo: replyTo,
+              replyToName: replyToName,
+            );
+          }).toList().reversed.toList();
       });
     } else {
       print('Error fetching chat messages: ${response.body}');
@@ -209,21 +242,46 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   void subscribeToSocketEvents() {
     SocketManager().socket.on('new message', (data) {
       print('New message received: $data');
+      if (!(data['is_deleted'] ?? false)) {
+        setState(() {
+          messages.insert(
+            0,
+            RoomMessage(
+              id: data['_id'] ?? data['id'] ?? const Uuid().v4(),
+              name: data['sender'] != null && data['sender'].toString().isNotEmpty
+                  ? '@${data['sender']}'
+                  : '@Unknown',
+              profileImage: data['profile_image'] ?? 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: data['message'] ?? '',
+              messageType: data['sender'] == currentUser ? 'sender' : 'receiver',
+              selected: true,
+              reactions: Map<String, int>.from(data['reactions'] ?? {}),
+            ),
+          );
+        });
+      }
+    });
+
+    // Listen for message deletion events
+    SocketManager().socket.on('message_deleted', (data) {
+      print('Message deleted: $data');
+      String messageId = data['message_id'];
       setState(() {
-        messages.insert(
-          0,
-          RoomMessage(
-            id: data['_id'] ?? data['id'] ?? const Uuid().v4(),
-            name: data['sender'] != null && data['sender'].toString().isNotEmpty
-                ? '@${data['sender']}'
-                : '@Unknown',
-            profileImage:
-                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-            messageContent: data['message'] ?? '',
-            messageType: data['sender'] == currentUser ? 'sender' : 'receiver',
-            selected: true,
-          ),
-        );
+        messages.removeWhere((m) => m.id == messageId);
+      });
+    });
+
+    // Add reaction update listener
+    SocketManager().socket.on('reaction_update', (data) {
+      print('Reaction update received: $data');
+      String messageId = data['message_id'];
+      Map<String, int> reactions = Map<String, int>.from(data['reactions']);
+      
+      setState(() {
+        var messageIndex = messages.indexWhere((m) => m.id == messageId);
+        if (messageIndex != -1) {
+          messages[messageIndex].reactions = reactions;
+        }
       });
     });
   }
@@ -1030,22 +1088,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   void handleContextMenuTap(dynamic menuItem, RoomMessage message) {
-    print('menuItem: $menuItem');
-    try {
-      print('menuItem.label: \\${menuItem.label}');
-    } catch (e) {
-      print('menuItem.label not found');
-    }
-    try {
-      print('menuItem.title: \\${menuItem.title}');
-    } catch (e) {
-      print('menuItem.title not found');
-    }
-    try {
-      print('menuItem.value: \\${menuItem.value}');
-    } catch (e) {
-      print('menuItem.value not found');
-    }
     String action;
     try {
       action = menuItem.label.toLowerCase();
@@ -1063,9 +1105,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         // Handle report
         break;
       case 'delete':
-        setState(() {
-          messages.removeWhere((m) => m.id == message.id);
-        });
+        // Only allow deletion if the message was sent by the current user
+        if (message.name == '@$currentUser') {
+          // Send delete event through socket
+          SocketManager().socket.emit('send message', {
+            "type": "delete",
+            "message_id": message.id,
+            "gameId": widget.gameId,
+            "sender": currentUser
+          });
+          
+          // Update local state
+          setState(() {
+            messages.removeWhere((m) => m.id == message.id);
+          });
+        }
         break;
     }
   }

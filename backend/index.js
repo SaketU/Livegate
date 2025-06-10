@@ -295,6 +295,31 @@ io.on('connection', socket => {
     }
   });
 
+  // Add delete message handler
+  socket.on('delete message', async (data) => {
+    try {
+      const { gameId, messageId } = data;
+      
+      // Find the game and remove the message
+      const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
+        gameId,
+        { $pull: { chat: { _id: messageId } } },
+        { new: true }
+      );
+
+      if (!updatedGame) {
+        socket.emit('error', { message: 'Game not found' });
+        return;
+      }
+
+      // Broadcast the deletion to all clients in the room
+      io.to(gameId).emit('message deleted', { messageId });
+    } catch (err) {
+      console.error('Error deleting message: ', err);
+      socket.emit('error', { message: 'Server error' });
+    }
+  });
+
   // New event handler for reactions
   socket.on('add reaction', async (data) => {
     try {

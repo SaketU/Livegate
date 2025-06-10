@@ -282,6 +282,15 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       });
     });
 
+    // Listen for message deletions
+    SocketManager().socket.on('message deleted', (data) {
+      print('Message deletion received: $data');
+      setState(() {
+        final messageId = data['messageId'];
+        messages.removeWhere((m) => m.id == messageId);
+      });
+    });
+
     // Listen for reaction updates
     SocketManager().socket.on('reaction updated', (data) {
       print('Reaction update received: $data');
@@ -1100,22 +1109,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   void handleContextMenuTap(dynamic menuItem, RoomMessage message) {
-    print('menuItem: $menuItem');
-    try {
-      print('menuItem.label: \\${menuItem.label}');
-    } catch (e) {
-      print('menuItem.label not found');
-    }
-    try {
-      print('menuItem.title: \\${menuItem.title}');
-    } catch (e) {
-      print('menuItem.title not found');
-    }
-    try {
-      print('menuItem.value: \\${menuItem.value}');
-    } catch (e) {
-      print('menuItem.value not found');
-    }
     String action;
     try {
       action = menuItem.label.toLowerCase();
@@ -1133,9 +1126,19 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         // Handle report
         break;
       case 'delete':
-        setState(() {
-          messages.removeWhere((m) => m.id == message.id);
-        });
+        // Only allow deletion of own messages
+        if (message.name == '@$currentUser') {
+          // Remove message locally
+          setState(() {
+            messages.removeWhere((m) => m.id == message.id);
+          });
+          
+          // Send delete message event to server
+          SocketManager().socket.emit('delete message', {
+            'gameId': widget.gameId,
+            'messageId': message.id,
+          });
+        }
         break;
     }
   }

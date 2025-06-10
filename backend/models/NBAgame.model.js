@@ -14,6 +14,7 @@ const NBAgameSchema = new Schema({
       name: String,
       message: String
     },
+    reactions: { type: Map, of: Number, default: new Map() },
     createdAt: { type: Date, default: Date.now }
   }],
   venue: { type: String, required: true },

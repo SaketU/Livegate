@@ -275,7 +275,8 @@ io.on('connection', socket => {
         sender: sender, 
         message: message,
         messageType: messageType || 'receiver',
-        replyTo: replyTo
+        replyTo: replyTo,
+        reactions: new Map() // Initialize empty reactions map
       };
       const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
         gameId,
@@ -294,6 +295,41 @@ io.on('connection', socket => {
     }
   });
 
+  // New event handler for reactions
+  socket.on('add reaction', async (data) => {
+    try {
+      const { gameId, messageId, reaction } = data;
+      
+      // Find the game and message
+      const game = await NBAgameLeagues.findById(gameId);
+      if (!game) {
+        socket.emit('error', { message: 'Game not found' });
+        return;
+      }
+
+      const message = game.chat.id(messageId);
+      if (!message) {
+        socket.emit('error', { message: 'Message not found' });
+        return;
+      }
+
+      // Update or initialize the reaction count
+      const currentCount = message.reactions.get(reaction) || 0;
+      message.reactions.set(reaction, currentCount + 1);
+      
+      // Save the game
+      await game.save();
+
+      // Broadcast the reaction update to all clients in the room
+      io.to(gameId).emit('reaction updated', {
+        messageId: messageId,
+        reactions: Object.fromEntries(message.reactions)
+      });
+    } catch (err) {
+      console.error('Error processing reaction: ', err);
+      socket.emit('error', { message: 'Server error' });
+    }
+  });
 });
 
 module.exports = app;

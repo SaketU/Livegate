@@ -157,17 +157,27 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
   // add reaction to message
   void addReactionToMessage({
-  required RoomMessage message,
-  required String reaction,
-}) {
-  HapticFeedback.mediumImpact(); // Add haptic feedback when adding reaction
-  if (message.reactions.containsKey(reaction)) {
-    message.reactions[reaction] = message.reactions[reaction]! + 1;
-  } else {
-    message.reactions[reaction] = 1;
+    required RoomMessage message,
+    required String reaction,
+  }) {
+    HapticFeedback.mediumImpact();
+
+    // Update locally first for immediate feedback
+    setState(() {
+      if (message.reactions.containsKey(reaction)) {
+        message.reactions[reaction] = message.reactions[reaction]! + 1;
+      } else {
+        message.reactions[reaction] = 1;
+      }
+    });
+
+    // Send reaction to server
+    SocketManager().socket.emit('add reaction', {
+      'gameId': widget.gameId,
+      'messageId': message.id,
+      'reaction': reaction,
+    });
   }
-  setState(() {});
-}
   
 
   Future<void> _loadCurrentUser() async {
@@ -204,6 +214,12 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
               messageType: 'receiver',
             );
           }
+
+          // Handle reactions
+          Map<String, int> reactions = {};
+          if (chatEntry['reactions'] != null) {
+            reactions = Map<String, int>.from(chatEntry['reactions']);
+          }
           
           return RoomMessage(
             id: chatEntry['_id'] ?? chatEntry['id'] ?? const Uuid().v4(),
@@ -214,6 +230,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
             selected: true,
             replyTo: replyTo,
             replyToName: replyToName,
+            reactions: reactions,
           );
         }).toList().reversed.toList();
       });
@@ -239,6 +256,12 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
             messageType: 'receiver',
           );
         }
+
+        // Handle reactions for new messages
+        Map<String, int> reactions = {};
+        if (data['reactions'] != null) {
+          reactions = Map<String, int>.from(data['reactions']);
+        }
         
         messages.insert(
           0,
@@ -253,8 +276,24 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
             selected: true,
             replyTo: replyTo,
             replyToName: replyToName,
+            reactions: reactions,
           ),
         );
+      });
+    });
+
+    // Listen for reaction updates
+    SocketManager().socket.on('reaction updated', (data) {
+      print('Reaction update received: $data');
+      setState(() {
+        final messageId = data['messageId'];
+        final updatedReactions = Map<String, int>.from(data['reactions']);
+        
+        // Find and update the message with new reactions
+        final messageIndex = messages.indexWhere((m) => m.id == messageId);
+        if (messageIndex != -1) {
+          messages[messageIndex].reactions = updatedReactions;
+        }
       });
     });
   }

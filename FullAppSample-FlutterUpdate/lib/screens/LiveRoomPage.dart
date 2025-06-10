@@ -190,14 +190,30 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           final String sender = chatEntry['sender'] != null && chatEntry['sender'].toString().isNotEmpty
               ? chatEntry['sender']
               : 'Unknown';
+          
+          // Handle reply information
+          RoomMessage? replyTo;
+          String? replyToName;
+          if (chatEntry['replyTo'] != null) {
+            replyToName = chatEntry['replyTo']['name'];
+            final replyMessage = chatEntry['replyTo']['message'];
+            replyTo = RoomMessage(
+              name: replyToName ?? 'Unknown',
+              profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: replyMessage,
+              messageType: 'receiver',
+            );
+          }
+          
           return RoomMessage(
             id: chatEntry['_id'] ?? chatEntry['id'] ?? const Uuid().v4(),
             name: '@$sender',
-            profileImage:
-                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+            profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
             messageContent: chatEntry['message'] ?? '',
-            messageType: sender == currentUser ? 'sender' : 'receiver',
+            messageType: chatEntry['messageType'] ?? (sender == currentUser ? 'sender' : 'receiver'),
             selected: true,
+            replyTo: replyTo,
+            replyToName: replyToName,
           );
         }).toList().reversed.toList();
       });
@@ -210,6 +226,20 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     SocketManager().socket.on('new message', (data) {
       print('New message received: $data');
       setState(() {
+        // Handle reply information for new messages
+        RoomMessage? replyTo;
+        String? replyToName;
+        if (data['replyTo'] != null) {
+          replyToName = data['replyTo']['name'];
+          final replyMessage = data['replyTo']['message'];
+          replyTo = RoomMessage(
+            name: replyToName ?? 'Unknown',
+            profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+            messageContent: replyMessage,
+            messageType: 'receiver',
+          );
+        }
+        
         messages.insert(
           0,
           RoomMessage(
@@ -217,11 +247,12 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
             name: data['sender'] != null && data['sender'].toString().isNotEmpty
                 ? '@${data['sender']}'
                 : '@Unknown',
-            profileImage:
-                'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+            profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
             messageContent: data['message'] ?? '',
-            messageType: data['sender'] == currentUser ? 'sender' : 'receiver',
+            messageType: data['messageType'] ?? (data['sender'] == currentUser ? 'sender' : 'receiver'),
             selected: true,
+            replyTo: replyTo,
+            replyToName: replyToName,
           ),
         );
       });

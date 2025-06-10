@@ -270,11 +270,12 @@ io.on('connection', socket => {
 
   socket.on('send message', async (data) => {
     try {
-      const { gameId, message, sender, messageType } = data;
+      const { gameId, message, sender, messageType, replyTo } = data;
       const chatMessage = { 
         sender: sender, 
         message: message,
-        messageType: messageType || 'receiver'  // Include messageType in the chat message
+        messageType: messageType || 'receiver',
+        replyTo: replyTo
       };
       const updatedGame = await NBAgameLeagues.findByIdAndUpdate(
         gameId,

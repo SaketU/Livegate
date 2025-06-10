@@ -9,6 +9,11 @@ const NBAgameSchema = new Schema({
   chat: [{
     sender: { type: String, required: true },
     message: { type: String, required: true },
+    messageType: { type: String, default: 'receiver' },
+    replyTo: {
+      name: String,
+      message: String
+    },
     createdAt: { type: Date, default: Date.now }
   }],
   venue: { type: String, required: true },

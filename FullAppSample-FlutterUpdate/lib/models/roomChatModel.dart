@@ -6,7 +6,7 @@ class RoomMessage {
   String id; // Unique ID for each message
   final String name;
   final String profileImage;
-  final String messageContent;
+  String messageContent; // Remove final to allow editing
   final String messageType;
   bool selected;
   Map<String, int> reactions;

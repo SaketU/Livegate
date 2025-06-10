@@ -48,6 +48,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   String currentUser = '@Unknown';
   List<RoomMessage> messages = [];
   RoomMessage? replyingTo;
+  RoomMessage? editingMessage; // Add state for editing message
   late LongPressGestureRecognizer _longPressRecognizer;
 
   // Add helper function to detect if text contains only emojis
@@ -291,6 +292,21 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       });
     });
 
+    // Listen for message edits
+    SocketManager().socket.on('message edited', (data) {
+      print('Message edit received: $data');
+      setState(() {
+        final messageId = data['messageId'];
+        final newMessage = data['newMessage'];
+        
+        // Find and update the message with new content
+        final messageIndex = messages.indexWhere((m) => m.id == messageId);
+        if (messageIndex != -1) {
+          messages[messageIndex].messageContent = newMessage;
+        }
+      });
+    });
+
     // Listen for reaction updates
     SocketManager().socket.on('reaction updated', (data) {
       print('Reaction update received: $data');
@@ -415,6 +431,13 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       onTap: () {
         // Dismiss keyboard when tapping outside text field
         _focusNode.unfocus();
+        // Clear editing state when tapping outside
+        if (editingMessage != null) {
+          setState(() {
+            editingMessage = null;
+            _controller.clear();
+          });
+        }
       },
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
@@ -628,6 +651,57 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                         IconButton(
                           icon: Icon(Icons.close),
                           onPressed: cancelReply,
+                          color: Theme.of(context).colorScheme.tertiary,
+                        ),
+                      ],
+                    ),
+                  ),
+                // Show editing indicator if editing a message
+                if (editingMessage != null)
+                  Container(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Color(0Xff242525)
+                        : Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Editing message',
+                                    style: GoogleFonts.interTight(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.tertiary.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 1),
+                              Text(
+                                editingMessage!.messageContent,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.interTight(
+                                  fontSize: 14,
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () {
+                            setState(() {
+                              editingMessage = null;
+                              _controller.clear();
+                            });
+                          },
                           color: Theme.of(context).colorScheme.tertiary,
                         ),
                       ],
@@ -1120,7 +1194,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         replyToMessage(message);
         break;
       case 'copy':
-        // Handle copy
+        // Only allow editing of own messages
+        if (message.name == '@$currentUser') {
+          setState(() {
+            editingMessage = message;
+            _controller.text = message.messageContent;
+          });
+          FocusScope.of(context).requestFocus(_focusNode);
+        }
         break;
       case 'report':
         // Handle report
@@ -1146,53 +1227,74 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   void _sendMessage() {
     String messageText = _controller.text.trim();
     if (messageText.isNotEmpty) {
-      // Create the new message
-      RoomMessage newMessage = RoomMessage(
-        id: const Uuid().v4(),
-        name: '@$currentUser',
-        profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-        messageContent: messageText,
-        messageType: "sender",
-        selected: true,
-        replyTo: replyingTo,
-        replyToName: replyingTo?.name,
-      );
+      if (editingMessage != null) {
+        // Handle edited message
+        final messageId = editingMessage!.id;
+        
+        // Update message locally
+        setState(() {
+          final index = messages.indexWhere((m) => m.id == messageId);
+          if (index != -1) {
+            messages[index].messageContent = messageText;
+          }
+          editingMessage = null;
+        });
 
-      // Update UI
-      setState(() {
-        messages.insert(0, newMessage);
-        replyingTo = null; // Clear the reply
-      });
+        // Send edit message event to server
+        SocketManager().socket.emit('edit message', {
+          'gameId': widget.gameId,
+          'messageId': messageId,
+          'newMessage': messageText,
+        });
+      } else {
+        // Create new message
+        RoomMessage newMessage = RoomMessage(
+          id: const Uuid().v4(),
+          name: '@$currentUser',
+          profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+          messageContent: messageText,
+          messageType: "sender",
+          selected: true,
+          replyTo: replyingTo,
+          replyToName: replyingTo?.name,
+        );
 
-      // Scroll to bottom after the message is added
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            0.0,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+        // Update UI
+        setState(() {
+          messages.insert(0, newMessage);
+          replyingTo = null; // Clear the reply
+        });
 
-      // Prepare socket message data
-      Map<String, dynamic> messageData = {
-        "gameId": widget.gameId,
-        "message": messageText,
-        "sender": currentUser,
-        "messageType": "sender"
-      };
+        // Scroll to bottom after the message is added
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              0.0,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        });
 
-      // Add reply information if present
-      if (newMessage.replyTo != null) {
-        messageData["replyTo"] = {
-          "name": newMessage.replyToName,
-          "message": newMessage.replyTo!.messageContent,
+        // Prepare socket message data
+        Map<String, dynamic> messageData = {
+          "gameId": widget.gameId,
+          "message": messageText,
+          "sender": currentUser,
+          "messageType": "sender"
         };
-      }
 
-      // Send message through socket
-      SocketManager().socket.emit('send message', messageData);
+        // Add reply information if present
+        if (newMessage.replyTo != null) {
+          messageData["replyTo"] = {
+            "name": newMessage.replyToName,
+            "message": newMessage.replyTo!.messageContent,
+          };
+        }
+
+        // Send message through socket
+        SocketManager().socket.emit('send message', messageData);
+      }
       _controller.clear();
     }
   }

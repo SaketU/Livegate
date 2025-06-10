@@ -320,6 +320,45 @@ io.on('connection', socket => {
     }
   });
 
+  // Add edit message handler
+  socket.on('edit message', async (data) => {
+    try {
+      const { gameId, messageId, newMessage } = data;
+      
+      // Find the game and update the message
+      const updatedGame = await NBAgameLeagues.findOneAndUpdate(
+        {
+          _id: gameId,
+          'chat._id': messageId
+        },
+        {
+          $set: {
+            'chat.$.message': newMessage,
+          }
+        },
+        { new: true }
+      );
+
+      if (!updatedGame) {
+        socket.emit('error', { message: 'Game or message not found' });
+        return;
+      }
+
+      // Find the updated message to broadcast
+      const editedMessage = updatedGame.chat.find(msg => msg._id.toString() === messageId);
+      if (editedMessage) {
+        // Broadcast the edit to all clients in the room
+        io.to(gameId).emit('message edited', {
+          messageId,
+          newMessage,
+        });
+      }
+    } catch (err) {
+      console.error('Error editing message: ', err);
+      socket.emit('error', { message: 'Server error' });
+    }
+  });
+
   // New event handler for reactions
   socket.on('add reaction', async (data) => {
     try {

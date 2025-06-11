@@ -564,7 +564,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                             () => LongPressGestureRecognizer(),
                             (LongPressGestureRecognizer instance) {
                               instance.onLongPress = () {
-                                HapticFeedback.heavyImpact(); // Add haptic feedback for long press
+                                HapticFeedback.mediumImpact(); // Add haptic feedback for long press
                                 Navigator.of(context).push(
                                   HeroDialogRoute(
                                     builder: (context) {
@@ -924,7 +924,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
 
     return GestureDetector(
       onLongPress: () {
-        HapticFeedback.heavyImpact(); // Add haptic feedback for long press
+        HapticFeedback.mediumImpact(); // Add haptic feedback for long press
         Navigator.of(context).push(
           HeroDialogRoute(
             builder: (context) {
@@ -1132,24 +1132,26 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: message.reactions.entries.map((entry) {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                                        padding: const EdgeInsets.only(left: 3, right: 1),
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           crossAxisAlignment: CrossAxisAlignment.center,
                                           children: [
-                                            Container(
-                                              alignment: Alignment.center,
-                                              child: _buildTextWithoutSelection(
-                                                entry.key,
-                                                TextStyle(
-                                                  fontSize: 15,
-                                                  height: 1.1,
+                                                                                          Container(
+                                                alignment: Alignment.center,
+                                                child: _buildTextWithoutSelection(
+                                                  entry.key,
+                                                  TextStyle(
+                                                    fontSize: 14,
+                                                    height: 1.1,
+                                                  ).copyWith(
+                                                    fontSize: isOnlyEmojis(entry.key) ? 14 * 1.15 : 14,
+                                                  ),
                                                 ),
-                                              ),
                                             ),
                                             if (entry.value > 1)
                                               Container(
-                                                padding: const EdgeInsets.only(left: 2),
+                                                padding: const EdgeInsets.only(left: 2, right: 3),
                                                 alignment: Alignment.center,
                                                 child: _buildTextWithoutSelection(
                                                   entry.value.toString(),

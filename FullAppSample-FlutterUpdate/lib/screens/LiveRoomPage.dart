@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Add this import for haptic feedback
-import 'package:flutter_chat_reactions/utilities/hero_dialog_route.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:fullapp/models/roomChatModel.dart';
 import 'package:focused_menu/focused_menu.dart';
@@ -18,7 +17,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullapp/services/socket_manager.dart'; // Import your SocketManager
-import 'package:flutter_chat_reactions/flutter_chat_reactions.dart';
+import '../widgets/CustomReactionsDialog.dart';
+import '../utilities/hero_dialog_route.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fullapp/config.dart';
 import 'package:uuid/uuid.dart';
@@ -568,14 +568,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
                                 Navigator.of(context).push(
                                   HeroDialogRoute(
                                     builder: (context) {
-                                      return ReactionsDialogWidget(
+                                      return CustomReactionsDialog(
                                         widgetAlignment: Alignment.topLeft,
                                         id: message.id,
                                         messageWidget: buildMessage(message, index),
                                         onReactionTap: (reaction) {
                                           print('reaction: $reaction');
 
-                                          if (reaction == '➕') {
+                                          if (reaction == 'add') {
                                             showEmojiBottomSheet(
                                               message: message,
                                             );
@@ -928,14 +928,14 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         Navigator.of(context).push(
           HeroDialogRoute(
             builder: (context) {
-              return ReactionsDialogWidget(
+              return CustomReactionsDialog(
                 widgetAlignment: Alignment.topLeft,
                 id: message.id,
                 messageWidget: buildMessage(message, index),
                 onReactionTap: (reaction) {
                   print('reaction: $reaction');
 
-                  if (reaction == '➕') {
+                  if (reaction == 'add') {
                     showEmojiBottomSheet(
                       message: message,
                     );
@@ -1193,7 +1193,7 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
       case 'reply':
         replyToMessage(message);
         break;
-      case 'copy':
+      case 'edit':
         // Only allow editing of own messages
         if (message.name == '@$currentUser') {
           setState(() {

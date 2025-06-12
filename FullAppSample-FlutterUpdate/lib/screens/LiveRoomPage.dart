@@ -241,8 +241,17 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   void subscribeToSocketEvents() {
-    SocketManager().socket.on('new message', (data) {
+    final socket = SocketManager().socket;
+    
+    // Remove any existing listeners to prevent duplicates
+    socket.off('new message');
+    socket.off('message deleted');
+    socket.off('message edited');
+    socket.off('reaction updated');
+    
+    socket.on('new message', (data) {
       print('New message received: $data');
+      if (!mounted) return; // Check if widget is still mounted
       setState(() {
         // Handle reply information for new messages
         RoomMessage? replyTo;
@@ -284,8 +293,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
 
     // Listen for message deletions
-    SocketManager().socket.on('message deleted', (data) {
+    socket.on('message deleted', (data) {
       print('Message deletion received: $data');
+      if (!mounted) return;
       setState(() {
         final messageId = data['messageId'];
         messages.removeWhere((m) => m.id == messageId);
@@ -293,8 +303,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
 
     // Listen for message edits
-    SocketManager().socket.on('message edited', (data) {
+    socket.on('message edited', (data) {
       print('Message edit received: $data');
+      if (!mounted) return;
       setState(() {
         final messageId = data['messageId'];
         final newMessage = data['newMessage'];
@@ -308,8 +319,9 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
 
     // Listen for reaction updates
-    SocketManager().socket.on('reaction updated', (data) {
+    socket.on('reaction updated', (data) {
       print('Reaction update received: $data');
+      if (!mounted) return;
       setState(() {
         final messageId = data['messageId'];
         final updatedReactions = Map<String, int>.from(data['reactions']);
@@ -324,11 +336,12 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
   }
 
   void _joinGameRoom() {
-    if (SocketManager().socket.connected) {
+    final socket = SocketManager().socket;
+    if (socket.connected) {
       SocketManager().joinGame(widget.gameId);
+      subscribeToSocketEvents();
     } else {
-      // When the socket connects, join the game room.
-      SocketManager().socket.on('connect', (_) {
+      socket.on('connect', (_) {
         SocketManager().joinGame(widget.gameId);
         subscribeToSocketEvents();
       });
@@ -382,7 +395,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     });
 
     loadChatMessages();
-    subscribeToSocketEvents();
     _joinGameRoom();
   }
 
@@ -391,10 +403,18 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     _controller.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
-    _longPressRecognizer.dispose();  // Add this
-    // Leave the game room when exiting the LiveRoomPage.
+    _longPressRecognizer.dispose();
+    
+    // Properly cleanup socket event listeners
+    final socket = SocketManager().socket;
+    socket.off('new message');
+    socket.off('message deleted');
+    socket.off('message edited');
+    socket.off('reaction updated');
+    socket.off('connect');
+    
+    // Leave the game room when exiting the LiveRoomPage
     SocketManager().leaveGame(widget.gameId);
-    SocketManager().socket.off('new message');
     super.dispose();
   }
 

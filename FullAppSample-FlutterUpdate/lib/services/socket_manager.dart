@@ -3,13 +3,24 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketManager {
   static final SocketManager _instance = SocketManager._internal();
-  late IO.Socket socket;
+  IO.Socket? _socket; // Make socket nullable
 
   factory SocketManager() => _instance;
   SocketManager._internal();
 
+  bool get isInitialized => _socket != null;
+
+  IO.Socket get socket {
+    if (_socket == null) {
+      initialize(); // Auto-initialize if not done
+    }
+    return _socket!;
+  }
+
   void initialize() {
-    socket = IO.io(
+    if (_socket != null) return; // Don't initialize if already done
+
+    _socket = IO.io(
       kBackendBaseUrl,
       IO.OptionBuilder()
         .setTransports(['websocket'])
@@ -17,36 +28,43 @@ class SocketManager {
         .build(),
     );
 
-    socket.onConnect((_) {
-      print('Socket connected: ${socket.id}');
+    _socket!.onConnect((_) {
+      print('Socket connected: ${_socket!.id}');
     });
 
-    socket.onDisconnect((_) {
+    _socket!.onDisconnect((_) {
       print('Socket disconnected');
     });
   }
 
   void joinGame(String gameId) {
-    if (socket.connected) {
-      socket.emit('join game', gameId);
-      print('Socket ${socket.id} joined game $gameId');
+    if (!isInitialized) return;
+    
+    if (_socket!.connected) {
+      _socket!.emit('join game', gameId);
+      print('Socket ${_socket!.id} joined game $gameId');
     } else {
-      socket.on('connect', (_) {
-        socket.emit('join game', gameId);
-        print('Socket ${socket.id} joined game $gameId after reconnect');
+      _socket!.on('connect', (_) {
+        _socket!.emit('join game', gameId);
+        print('Socket ${_socket!.id} joined game $gameId after reconnect');
       });
     }
   }
 
   void leaveGame(String gameId) {
-    if (socket.connected) {
-      socket.emit('leave game', gameId);
-      print('Socket ${socket.id} left game $gameId');
+    if (!isInitialized) return;
+    
+    if (_socket!.connected) {
+      _socket!.emit('leave game', gameId);
+      print('Socket ${_socket!.id} left game $gameId');
     }
   }
 
   void disconnect() {
-    socket.dispose();
-    print('Socket disconnected via logout');
+    if (_socket != null) {
+      _socket!.dispose();
+      _socket = null;
+      print('Socket disconnected via logout');
+    }
   }
 }

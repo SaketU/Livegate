@@ -287,8 +287,24 @@ io.on('connection', socket => {
         socket.emit('error', { message: 'Game not found' });
         return;
       }
-      console.log(`Broadcasting message from ${sender} to room ${gameId}:`, chatMessage);
-      socket.broadcast.to(gameId).emit('new message', chatMessage);
+
+      // Get the newly added message with its _id
+      const newMessage = updatedGame.chat[updatedGame.chat.length - 1];
+      
+      // Create the message object to emit, including the _id
+      const messageToEmit = {
+        _id: newMessage._id,
+        sender: newMessage.sender,
+        message: newMessage.message,
+        messageType: newMessage.messageType,
+        replyTo: newMessage.replyTo,
+        reactions: Object.fromEntries(newMessage.reactions || new Map())
+      };
+
+      console.log(`Broadcasting message from ${sender} to room ${gameId}:`, messageToEmit);
+      
+      // Emit to all clients in the room, including the sender
+      io.in(gameId).emit('new message', messageToEmit);
     } catch (err) {
       console.error('Error processing message: ', err);
       socket.emit('error', { message: 'Server error' });
@@ -377,6 +393,11 @@ io.on('connection', socket => {
         return;
       }
 
+      // Initialize reactions if not exists
+      if (!message.reactions) {
+        message.reactions = new Map();
+      }
+
       // Update or initialize the reaction count
       const currentCount = message.reactions.get(reaction) || 0;
       message.reactions.set(reaction, currentCount + 1);
@@ -384,10 +405,13 @@ io.on('connection', socket => {
       // Save the game
       await game.save();
 
+      // Convert Map to plain object for socket emission
+      const reactionsObject = Object.fromEntries(message.reactions);
+
       // Broadcast the reaction update to all clients in the room
       io.to(gameId).emit('reaction updated', {
         messageId: messageId,
-        reactions: Object.fromEntries(message.reactions)
+        reactions: reactionsObject
       });
     } catch (err) {
       console.error('Error processing reaction: ', err);

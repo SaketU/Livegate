@@ -101,19 +101,21 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void _signUserOut() {
-    // Disconnect the socket before logging out.
+  void _signUserOut() async {
+    // Disconnect the socket before logging out
     SocketManager().disconnect();
 
-    FirebaseAuth.instance.signOut();
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AuthPage()),
-        );
-      }
-    });
+    // Clear the stored access token
+    await storage.delete(key: 'accessToken');
+
+    // Clear Firebase auth state
+    await FirebaseAuth.instance.signOut();
+
+    // Navigate to auth page
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => AuthPage()),
+    );
   }
 
   @override

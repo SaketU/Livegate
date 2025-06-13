@@ -252,43 +252,85 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
     socket.on('new message', (data) {
       print('New message received: $data');
       if (!mounted) return; // Check if widget is still mounted
+
+      // Use the backend's _id if available, otherwise use id
+      final messageId = data['_id'] ?? data['id'];
+      if (messageId == null) {
+        print('Warning: Message received without ID');
+        return;
+      }
+
+      // Validate required fields
+      if (data['message'] == null || data['sender'] == null) {
+        print('Warning: Message missing required fields');
+        return;
+      }
+
       setState(() {
         // Handle reply information for new messages
         RoomMessage? replyTo;
         String? replyToName;
-        if (data['replyTo'] != null) {
-          replyToName = data['replyTo']['name'];
-          final replyMessage = data['replyTo']['message'];
-          replyTo = RoomMessage(
-            name: replyToName ?? 'Unknown',
-            profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-            messageContent: replyMessage,
-            messageType: 'receiver',
-          );
+        if (data['replyTo'] != null && data['replyTo'] is Map && data['replyTo'].isNotEmpty) {
+          replyToName = data['replyTo']['name']?.toString();
+          final replyMessage = data['replyTo']['message']?.toString();
+          if (replyToName != null && replyMessage != null) {
+            replyTo = RoomMessage(
+              name: replyToName,
+              profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: replyMessage,
+              messageType: 'receiver',
+            );
+          }
         }
 
         // Handle reactions for new messages
         Map<String, int> reactions = {};
-        if (data['reactions'] != null) {
-          reactions = Map<String, int>.from(data['reactions']);
+        if (data['reactions'] != null && data['reactions'] is Map) {
+          try {
+            reactions = Map<String, int>.from(data['reactions']);
+          } catch (e) {
+            print('Error parsing reactions: $e');
+          }
         }
-        
-        messages.insert(
-          0,
-          RoomMessage(
-            id: data['_id'] ?? data['id'] ?? const Uuid().v4(),
-            name: data['sender'] != null && data['sender'].toString().isNotEmpty
-                ? '@${data['sender']}'
-                : '@Unknown',
-            profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-            messageContent: data['message'] ?? '',
-            messageType: data['sender'] == currentUser ? 'sender' : 'receiver',
-            selected: true,
-            replyTo: replyTo,
-            replyToName: replyToName,
-            reactions: reactions,
-          ),
-        );
+
+        // Check if message already exists
+        final existingIndex = messages.indexWhere((m) => m.id == messageId);
+        if (existingIndex != -1) {
+          // Update existing message
+          messages[existingIndex].messageContent = data['message'].toString();
+          messages[existingIndex].reactions = reactions;
+          if (replyTo != null) {
+            messages[existingIndex].replyTo = replyTo;
+            messages[existingIndex].replyToName = replyToName;
+          }
+        } else {
+          // Add new message
+          messages.insert(
+            0,
+            RoomMessage(
+              id: messageId,
+              name: '@${data['sender'].toString()}',
+              profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
+              messageContent: data['message'].toString(),
+              messageType: data['sender'].toString() == currentUser ? 'sender' : 'receiver',
+              selected: true,
+              replyTo: replyTo,
+              replyToName: replyToName,
+              reactions: reactions,
+            ),
+          );
+
+          // Scroll to bottom after the message is added
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                0.0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
+        }
       });
     });
 
@@ -1269,35 +1311,6 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
           'newMessage': messageText,
         });
       } else {
-        // Create new message
-        RoomMessage newMessage = RoomMessage(
-          id: const Uuid().v4(),
-          name: '@$currentUser',
-          profileImage: 'https://media.sproutsocial.com/uploads/2022/06/profile-picture.jpeg',
-          messageContent: messageText,
-          messageType: "sender",
-          selected: true,
-          replyTo: replyingTo,
-          replyToName: replyingTo?.name,
-        );
-
-        // Update UI
-        setState(() {
-          messages.insert(0, newMessage);
-          replyingTo = null; // Clear the reply
-        });
-
-        // Scroll to bottom after the message is added
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              0.0,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          }
-        });
-
         // Prepare socket message data
         Map<String, dynamic> messageData = {
           "gameId": widget.gameId,
@@ -1307,12 +1320,17 @@ class _LiveRoomPageState extends State<LiveRoomPage> {
         };
 
         // Add reply information if present
-        if (newMessage.replyTo != null) {
+        if (replyingTo != null) {
           messageData["replyTo"] = {
-            "name": newMessage.replyToName,
-            "message": newMessage.replyTo!.messageContent,
+            "name": replyingTo!.name,
+            "message": replyingTo!.messageContent,
           };
         }
+
+        // Clear reply state
+        setState(() {
+          replyingTo = null;
+        });
 
         // Send message through socket
         SocketManager().socket.emit('send message', messageData);

@@ -44,11 +44,23 @@ class SocketManager {
       _socket!.emit('join game', gameId);
       print('Socket ${_socket!.id} joined game $gameId');
     } else {
+      print('Socket not connected, waiting for connection...');
       _socket!.on('connect', (_) {
         _socket!.emit('join game', gameId);
         print('Socket ${_socket!.id} joined game $gameId after reconnect');
       });
     }
+
+    // Add error handling
+    _socket!.on('error', (error) {
+      print('Socket error: $error');
+    });
+
+    // Add reconnection handling
+    _socket!.on('reconnect', (_) {
+      print('Socket reconnected, rejoining game $gameId');
+      _socket!.emit('join game', gameId);
+    });
   }
 
   void leaveGame(String gameId) {

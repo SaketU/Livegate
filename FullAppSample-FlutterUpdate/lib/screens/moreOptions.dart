@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fullapp/models/Rooms.dart';
 import 'package:fullapp/models/moreLeagues.dart';
-import 'package:fullapp/screens/NBALivesPage.dart';
+import 'package:fullapp/screens/LeaguesPage.dart';
 import 'package:fullapp/screens/profilePage.dart';
 import 'package:fullapp/widgets/chats.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fullapp/screens/NBALivesPage.dart';
+import 'package:fullapp/screens/LeaguesPage.dart';
 
 //code
 class MoreOptions extends StatefulWidget {
@@ -221,7 +221,7 @@ Widget _buildLeagueItem(BuildContext context, Leagues leagues) {
   return GestureDetector(
     onTap: () {
       Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return NBALivesPage();
+        return LeaguesPage(league: leagues.league);
       }));
     },
     child: Padding(
